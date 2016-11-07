@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Artceleration-EEE598-Assn2-master.iml" filepath="$PROJECT_DIR$/Artceleration-EEE598-Assn2-master.iml" />
+      <module fileurl="file://$PROJECT_DIR$/artceleration_app/artceleration_app.iml" filepath="$PROJECT_DIR$/artceleration_app/artceleration_app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/artcelerationlibrary/artcelerationlibrary.iml" filepath="$PROJECT_DIR$/artcelerationlibrary/artcelerationlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sample598library/sample598library.iml" filepath="$PROJECT_DIR$/sample598library/sample598library.iml" />
+    </modules>
+  </component>
+</project>
