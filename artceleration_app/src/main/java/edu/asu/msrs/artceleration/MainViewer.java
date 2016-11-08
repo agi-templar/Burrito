@@ -1,5 +1,6 @@
 package edu.asu.msrs.artceleration;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.camera2.CameraDevice;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import edu.asu.msrs.artcelerationlibrary.ArtLib;
 import edu.asu.msrs.artcelerationlibrary.TransformHandler;
 import edu.asu.msrs.artcelerationlibrary.TransformTest;
+import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformService;
 
 public class MainViewer extends AppCompatActivity {
     static {
@@ -31,6 +33,8 @@ public class MainViewer extends AppCompatActivity {
     private ArtLib artlib;
     private CaptureRequest cm;
     private CameraDevice cd;
+    public static final String KEY_TRANSFORM_OPTION = "TransformType";
+
     android.hardware.camera2.CaptureRequest cr;
     ArrayList<String> testsArray;
     TransformTest[] tests;
@@ -50,7 +54,7 @@ public class MainViewer extends AppCompatActivity {
         status2 = (TextView) findViewById(R.id.statusText2);
         artview = (ArtView) findViewById(R.id.artView);
 
-        artlib = new ArtLib();
+        artlib = new ArtLib(MainViewer.this);
 
         artlib.registerHandler(new TransformHandler() {
             @Override
@@ -68,11 +72,19 @@ public class MainViewer extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 TransformTest t = tests[position];
-                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)){
+                //if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)){
                     makeToast("Transform requested : "+ transforms[t.transformType]);
-                }else{
-                    makeToast("Transform request failed"+ transforms[t.transformType]);
-                }
+
+                    // Send Message to handler for processing
+                    for(int type : testArtTransformQueue.transformType) {
+                        Intent intent = new Intent(MainViewer.this, ArtTransformService.class);
+                        intent.putExtra(KEY_TRANSFORM_OPTION, type);
+                        startService(intent);
+                    }
+
+                //}else{
+                //    makeToast("Transform request failed"+ transforms[t.transformType]);
+                //}
             }
 
             @Override
@@ -96,6 +108,6 @@ public class MainViewer extends AppCompatActivity {
     }
     private void makeToast(String str){
         Toast.makeText(getBaseContext(), str,
-                Toast.LENGTH_LONG).show();
+                Toast.LENGTH_SHORT).show();
     }
 }
