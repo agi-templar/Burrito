@@ -6,10 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.MemoryFile;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+
+import java.io.IOException;
 
 import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformService;
 
@@ -70,7 +75,23 @@ public class ArtLib {
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
 
+        Bundle bundle = new Bundle();
+
+        try {
+            MemoryFile imgFile = new MemoryFile("RawImage", 30);
+            ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(imgFile);
+            bundle.putParcelable("pfd", pfd);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        bundle.putIntArray("intArgs", intArgs);
+        bundle.putFloatArray("floatArgs", floatArgs);
+
         Message message = Message.obtain(null,index);
+        message.setData(bundle);
+
         try {
             mServiceMessenger.send(message);
         } catch (RemoteException e) {

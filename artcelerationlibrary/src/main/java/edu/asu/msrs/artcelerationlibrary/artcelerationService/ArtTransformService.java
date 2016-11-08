@@ -39,9 +39,8 @@ public class ArtTransformService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        int artCelerationOption = intent.getIntExtra("TransformType",0);
+
         Message message = Message.obtain();
-        message.obj = artCelerationOption;
         message.arg1 = startId;
         mArtTransformHandler.sendMessage(message);
         return Service.START_REDELIVER_INTENT;
