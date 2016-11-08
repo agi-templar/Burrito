@@ -30,6 +30,7 @@ public class ArtTransformService extends Service{
         thread.setName("ArtTransformThread");
         thread.start();
 
+        // Make sure Handler is available
         while (thread.mArtTransformHandler == null) {
 
         }

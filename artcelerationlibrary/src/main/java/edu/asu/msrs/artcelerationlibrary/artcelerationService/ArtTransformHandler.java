@@ -10,10 +10,7 @@ import android.os.Message;
 
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
-import android.widget.Toast;
 
-
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 
 import edu.asu.msrs.artcelerationlibrary.TransformHandler;
