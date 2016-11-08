@@ -7,14 +7,11 @@ import android.os.Message;
 import android.os.Messenger;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import edu.asu.msrs.*;
+
 
 public class ArtTransformService extends Service{
 
     private static final String TAG = ArtTransformService.class.getSimpleName();
-    public static final int Gaussian_Blur = 1;
-    public static final int Neon_Edges = 2;
-    public static final int Color_Filter = 3;
 
     public Messenger mMessenger = new Messenger(new ArtTransformHandler());
     private ArtTransformHandler mArtTransformHandler;
