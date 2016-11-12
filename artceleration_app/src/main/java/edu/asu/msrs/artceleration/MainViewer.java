@@ -5,6 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -14,6 +17,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -21,8 +25,11 @@ import edu.asu.msrs.artcelerationlibrary.ArtLib;
 import edu.asu.msrs.artcelerationlibrary.TransformHandler;
 import edu.asu.msrs.artcelerationlibrary.TransformTest;
 import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformService;
+import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformTaskCallable;
+import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformThreadPool;
+import edu.asu.msrs.artcelerationlibrary.artcelerationService.UiThreadCallback;
 
-public class MainViewer extends AppCompatActivity {
+public class MainViewer extends AppCompatActivity implements UiThreadCallback {
     static {
         System.loadLibrary("native-lib");
     }
@@ -33,6 +40,9 @@ public class MainViewer extends AppCompatActivity {
     private ArtLib artlib;
     private CaptureRequest cm;
     private CameraDevice cd;
+
+    private UiHandler mUiHandler;
+
     public static final String KEY_TRANSFORM_OPTION = "TransformType";
 
     android.hardware.camera2.CaptureRequest cr;
@@ -40,6 +50,8 @@ public class MainViewer extends AppCompatActivity {
     TransformTest[] tests;
     String[] transforms;
     Bitmap src_img;
+    private ArtTransformThreadPool mArtTransformThreadPool;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +67,9 @@ public class MainViewer extends AppCompatActivity {
         artview = (ArtView) findViewById(R.id.artView);
 
         artlib = new ArtLib(MainViewer.this);
+
+        mArtTransformThreadPool = ArtTransformThreadPool.getInstance();
+        mArtTransformThreadPool.setUiThreadCallback(this);
 
         artlib.registerHandler(new TransformHandler() {
             @Override
@@ -72,7 +87,7 @@ public class MainViewer extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 TransformTest t = tests[position];
-                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)){
+                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs, mArtTransformThreadPool)){
                     makeToast("Transform requested : "+ transforms[t.transformType]);
 
                 }else{
@@ -88,7 +103,9 @@ public class MainViewer extends AppCompatActivity {
 
     }
 
+
     private void initSpinner() {
+
         testsArray = new ArrayList<String>();
         tests = artlib.getTestsArray();
         transforms = artlib.getTransformsArray();
@@ -103,4 +120,39 @@ public class MainViewer extends AppCompatActivity {
         Toast.makeText(getBaseContext(), str,
                 Toast.LENGTH_SHORT).show();
     }
+
+    @Override
+    public void publishToUiThread(Message message) {
+        if(mUiHandler != null){
+            mUiHandler.sendMessage(message);
+        }
+    }
+
+    private static class UiHandler extends Handler {
+        private WeakReference<TextView> mWeakRefDisplay;
+
+        public UiHandler(Looper looper, TextView display) {
+            super(looper);
+            this.mWeakRefDisplay = new WeakReference<TextView>(display);
+        }
+
+        // This method will run on UI thread
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                // Our communication protocol for passing a string to the UI thread
+                case Util.MESSAGE_ID:
+                    Bundle bundle = msg.getData();
+                    String messsageText = bundle.getString(Util.MESSAGE_BODY, Util.EMPTY_MESSAGE);
+                    if(mWeakRefDisplay != null && mWeakRefDisplay.get() != null)
+                        mWeakRefDisplay.get().append(Util.getReadableTime() + " " + messsageText + "\n");
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+
 }

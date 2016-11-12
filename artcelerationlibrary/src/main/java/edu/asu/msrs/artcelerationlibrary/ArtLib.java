@@ -17,6 +17,10 @@ import android.os.RemoteException;
 import java.io.IOException;
 
 import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformService;
+import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformTaskCallable;
+import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformThreadPool;
+
+import static edu.asu.msrs.artcelerationlibrary.R.styleable.ArtView;
 
 /**
  * Created by rlikamwa on 10/2/2016.
@@ -27,6 +31,7 @@ public class ArtLib {
     private Activity mActivity;
     private Messenger mServiceMessenger;
     private boolean mBound = false;
+    private ArtTransformThreadPool mArtTransformThreadPool;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -44,6 +49,7 @@ public class ArtLib {
     };
 
 
+
     public ArtLib(Activity activity){
         mActivity = activity;
         init();
@@ -53,6 +59,7 @@ public class ArtLib {
 
         Intent intent = new Intent(mActivity, ArtTransformService.class);
         mActivity.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+
     }
 
     public String[] getTransformsArray(){
@@ -73,7 +80,7 @@ public class ArtLib {
         this.artlistener=artlistener;
     }
 
-    public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
+    public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs, ArtTransformThreadPool artTransformThreadPool) {
 
         Bundle bundle = new Bundle();
 
@@ -91,6 +98,11 @@ public class ArtLib {
 
         Message message = Message.obtain(null,index);
         message.setData(bundle);
+
+        ArtTransformTaskCallable callable = new ArtTransformTaskCallable();
+        callable.setArtTransformThreadPool(artTransformThreadPool);
+        artTransformThreadPool.addArtTransformTask(callable);
+
 
         try {
             mServiceMessenger.send(message);

@@ -77,6 +77,6 @@ public class ArtTransformHandler extends Handler implements TransformHandler{
 
     @Override
     public void onTransformProcessed(Bitmap img_out) {
-        Log.d("artcelerationService", "TransformFinished");
+        //Log.d("artcelerationService", "TransformFinished");
     }
 }
