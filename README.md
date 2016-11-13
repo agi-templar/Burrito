@@ -232,6 +232,8 @@ We assume value of "arg1" in message to be starId, which is a parameter recordin
 
 Above is in the Handler class. It enables out service progress could stop by itself after all its message queue has been handled yet. The keypoint is, if our user kill the service progress for some reasons, the service would automatically continue its undo queue handle job!
 
+What's more, I have already done three custom effects right now (as shown at the beginning). I think finally I could develop more interesting effects!
+
 That's all. Really thanks professor. It’s a great experience.
 
 
