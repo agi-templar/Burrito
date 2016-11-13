@@ -3,6 +3,8 @@
 
 Team Member: Ruibo Liu & Tian Xia
 
+![](https://s3.amazonaws.com/artceleration/effect.jpg)
+
 ## Development Goals
 
 1. Swift development based on appropriate __Modularity__, including needed Abstraction and MVC project structure.
@@ -17,7 +19,7 @@ Team Member: Ruibo Liu & Tian Xia
 
 Above is the project structure in high level. All activities are marked with circles and classes are marked with rounded rectangles. We could see that ArtLib is the core for the whole structure. Besides the helper classes and needed supported classes provided by professor, I created three other classes to implement service and thread. 
 
-## FIFO & Separate Thread… How does it work? 
+## Message Queue & Separate Thread… How does it work? 
 
 ![](https://s3.amazonaws.com/artceleration/truck_whole.png)
 
@@ -28,6 +30,20 @@ Above is a big picture of the whole story. We assumes __the artTransformService_
 ![](https://s3.amazonaws.com/artceleration/truck.png)
 
 Now, we hire a girl to help us do the “Looper” job. Her name is “__Looper__”. What she does is: Every time she notices the cook is about to finish an order, she grabs the next order from the “__Message Queue__” and gives it to the cook. That’s basically a __FIFO manner__, because of the existing of message pool.
+
+## Further, AsyncTask and ThreadPool
+
+After we figure out how the combination of thread, looper and handler works, we need to think about how to imporve the efficiency of our app, especially because all the ArtTransform should run without disturbing each other, which means we need to use parallel threads.
+
+A thread pool is a good idea. Android provides some defined threadpools, like "Executors.newCachedThreadPool()" or "Executors.newFixedThreadPool()". More detailed information could be found [here](https://developer.android.com/reference/java/util/concurrent/Executors.html).
+
+Another thing we need think a little bit is how to queue how task. We may make several ArtTransform requests at the same time, or at least, due to the processing time, there would be some requests processing simultaneously.
+Android also introduces some great tools for us to handle the multi-thread task. It's called "__AsyncTask__".
+
+>**Definition from Android Docs**
+AsyncTask is designed to be a helper class around Thread and Handler and does not constitute a generic threading framework. AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you need to keep threads running for long periods of time, it is highly recommended you use the various APIs provided by the java.util.concurrent package such as Executor, ThreadPoolExecutor and FutureTask.
+
+So my strategy is, everytime the service receives message from the client (here, it's ArtLib.class.), it would call a AsyncTask, where we retrieve data from message, do the transform and send back the message including the proceeded image to the client. The client would implement the listener method of activity which would notify the main activity to update its UI elements.  
 
 ## Corresponding Code Strategy
 ### ArtTransformService
@@ -81,36 +97,102 @@ Nothing fancy. Actually there are two ways to create a separate thread. Besides 
 
 ### ArtTransformHandler
 ```java
-public class ArtTransformHandler extends Handler implements TransformHandler{
+public class ArtTransformHandler extends Handler {
     private ArtTransformService mService;
-    private Bitmap img_out;
+    static ArrayList<Messenger> mClients = new ArrayList<>();
+    static Messenger targetMessenger;
+    List<ArtTransformAsyncTask> mArtTransformAsyncTasks;
+
 
     @Override
     public void handleMessage(Message msg) {
-        
-        // Handle different types of transform requests based on "what"
-        doTransform(msg.what);
 
-        Log.d("option", String.valueOf(msg.what));
+        targetMessenger = msg.replyTo;
+        mArtTransformAsyncTasks = new ArrayList<>();
 
-        Bundle bundle = msg.getData();
-        ParcelFileDescriptor pfd = bundle.getParcelable("pfd");
-        FileInputStream fios = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
-        img_out = BitmapFactory.decodeStream(fios);
-     }
+        switch (msg.what) {
+            case 0:
+                Log.d("doTransform", "Gaussian_Blur");
+
+                try {
+                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), loadImage(msg));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    Log.d("AsyncTask", "Gaussian_Blur Finished");
+                }
+
+                break;
+            ...
+            default:
+                break;
+        }
+
+    }
      ...
 ```
-We implement TransformHandler Interface and do some simple message handle process here. More complicated Callback or Conditional function would be implemented when transform algorithms come in in the future.
+Here we handle the message from the client, and based on "msg.what", we start different AsyncTask. The point is, we use ThreadPool to handle all the Asynctasks, which could definitely speed up our processing.
 
+### ArtTransformAsyncTask
+```java
+public class ArtTransformAsyncTask extends AsyncTask<Bitmap, Void, Void> {
+
+        private Bitmap rawBitmap;
+
+        @Override
+        protected void onPreExecute() {
+            mArtTransformAsyncTasks.add(this);
+        }
+
+        @Override
+        protected Void doInBackground(Bitmap... params) {
+            rawBitmap = changeLight(params[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            mArtTransformAsyncTasks.remove(this);
+            if (mArtTransformAsyncTasks.size() == 0) {
+                Log.d("AsyncTask", "All Tasks Finished");
+            }
+            notifyArtLib(rawBitmap);
+        }
+    }
+```
+and mentioned methods partly are:
+```java
+private Bitmap changeLight(Bitmap img) {
+        ColorMatrix colorMatrixchangeLight = new ColorMatrix();
+        ColorMatrix allColorMatrix = new ColorMatrix();
+
+        colorMatrixchangeLight.reset();
+        colorMatrixchangeLight.setScale(1.5f, 1.5f, 1.5f, 1);
+
+        allColorMatrix.reset();
+        allColorMatrix.postConcat(colorMatrixchangeLight);
+
+        Bitmap newBitmap = Bitmap.createBitmap(img.getWidth(), img.getHeight(), Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(newBitmap);
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+
+        paint.setColorFilter(new ColorMatrixColorFilter(allColorMatrix));
+        canvas.drawBitmap(img, 0, 0, paint);
+        return newBitmap;
+    }
+```
+Above is one of three my custom filters. This one could change the brightness of the image. 
 ## Challenge
 
 In fact, there's nothing too challenging. Maybe the debug progress is something frustrating.
 
-![](https://s3.amazonaws.com/artceleration/thread.png)
+![](https://s3.amazonaws.com/artceleration/threadpool.png)
 
 That is DDMS to make sure we manage to create a separate thread.
 
-![](https://s3.amazonaws.com/artceleration/debug.png)
+![](https://s3.amazonaws.com/artceleration/FIFO.png)
 
 Above is debug log. Click different option could send different message to handler. After processing, the onTransformProcessed() Method would be triggered.
 
