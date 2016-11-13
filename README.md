@@ -33,6 +33,8 @@ Now, we hire a girl to help us do the “Looper” job. Her name is “__Looper_
 
 ## Further, AsyncTask and ThreadPool
 
+![](https://s3.amazonaws.com/artceleration/AsyncTask.png)
+
 After we figure out how the combination of thread, looper and handler works, we need to think about how to imporve the efficiency of our app, especially because all the ArtTransform should run without disturbing each other, which means we need to use parallel threads.
 
 A thread pool is a good idea. Android provides some defined threadpools, like "Executors.newCachedThreadPool()" or "Executors.newFixedThreadPool()". More detailed information could be found [here](https://developer.android.com/reference/java/util/concurrent/Executors.html).
@@ -40,7 +42,7 @@ A thread pool is a good idea. Android provides some defined threadpools, like "E
 Another thing we need think a little bit is how to queue how task. We may make several ArtTransform requests at the same time, or at least, due to the processing time, there would be some requests processing simultaneously.
 Android also introduces some great tools for us to handle the multi-thread task. It's called "__AsyncTask__".
 
->**Definition from Android Docs**
+>**Definition from Android Docs:**
 AsyncTask is designed to be a helper class around Thread and Handler and does not constitute a generic threading framework. AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you need to keep threads running for long periods of time, it is highly recommended you use the various APIs provided by the java.util.concurrent package such as Executor, ThreadPoolExecutor and FutureTask.
 
 So my strategy is, everytime the service receives message from the client (here, it's ArtLib.class.), it would call a AsyncTask, where we retrieve data from message, do the transform and send back the message including the proceeded image to the client. The client would implement the listener method of activity which would notify the main activity to update its UI elements.  
