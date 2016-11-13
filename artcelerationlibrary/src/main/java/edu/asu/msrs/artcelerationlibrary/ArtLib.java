@@ -53,8 +53,7 @@ public class ArtLib {
     };
 
 
-
-    public ArtLib(Activity activity){
+    public ArtLib(Activity activity) {
         mActivity = activity;
         init();
     }
@@ -66,22 +65,22 @@ public class ArtLib {
 
     }
 
-    public String[] getTransformsArray(){
+    public String[] getTransformsArray() {
         String[] transforms = {"Gaussian Blur", "Neon edges", "Color Filter"};
         return transforms;
     }
 
-    public TransformTest[] getTestsArray(){
+    public TransformTest[] getTestsArray() {
         TransformTest[] transforms = new TransformTest[3];
-        transforms[0]=new TransformTest(0, new int[]{1,2,3}, new float[]{0.1f, 0.2f, 0.3f});
-        transforms[1]=new TransformTest(1, new int[]{11,22,33}, new float[]{0.3f, 0.2f, 0.3f});
-        transforms[2]=new TransformTest(2, new int[]{51,42,33}, new float[]{0.5f, 0.6f, 0.3f});
+        transforms[0] = new TransformTest(0, new int[]{1, 2, 3}, new float[]{0.1f, 0.2f, 0.3f});
+        transforms[1] = new TransformTest(1, new int[]{11, 22, 33}, new float[]{0.3f, 0.2f, 0.3f});
+        transforms[2] = new TransformTest(2, new int[]{51, 42, 33}, new float[]{0.5f, 0.6f, 0.3f});
 
         return transforms;
     }
 
-    public void registerHandler(TransformHandler artlistener){
-        this.artTransformListener =artlistener;
+    public void registerHandler(TransformHandler artlistener) {
+        this.artTransformListener = artlistener;
     }
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
@@ -91,27 +90,28 @@ public class ArtLib {
         try {
             int width = img.getWidth();
             int height = img.getHeight();
-            int  bytes = img.getByteCount();
+            int bytes = img.getByteCount();
 
-            ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
-            img.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
+            // Allocate buffer whose size based on the src_img
+            ByteBuffer buffer = ByteBuffer.allocate(bytes);
+            img.copyPixelsToBuffer(buffer);
             byte[] byteArray = buffer.array();
-
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
             memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
             ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
             memoryFile.close();
 
+            // put data into dataBundle
             dataBundle.putIntArray("intArgs", intArgs);
             dataBundle.putFloatArray("floatArgs", floatArgs);
             dataBundle.putParcelable("pfd", pfd);
 
-            Message message = Message.obtain(null,index, width, height);
+            // create message to be sent to ArtTransformService
+            Message message = Message.obtain(null, index, width, height);
             message.setData(dataBundle);
+            // tell the ArtTransformHandler reply to ArtLibHandler
             message.replyTo = mArtLibMessenger;
-
             mServiceMessenger.send(message);
-
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -126,33 +126,31 @@ public class ArtLib {
         return true;
     }
 
+    // ArtLib Handler: receive message from service and tell UI thread to update img
     public class ArtLibHandler extends Handler {
 
         @Override
         public void handleMessage(Message msg) {
             Bundle dataBundle = msg.getData();
             ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
-            if (pfd == null) {
-                Log.d("pfd", "null");
-            } else {
-                InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
-                //convertInputStreamToBitmap
-                byte[] byteArray = new byte[0];
-                try {
-                    byteArray = IOUtils.toByteArray(istream);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
+            InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
+            byte[] byteArray = new byte[0];
+            try {
+                byteArray = IOUtils.toByteArray(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
                 Bitmap img = Bitmap.createBitmap(msg.arg1, msg.arg2, Bitmap.Config.valueOf("ARGB_8888"));
                 ByteBuffer buffer = ByteBuffer.wrap(byteArray);
                 img.copyPixelsFromBuffer(buffer);
 
-                if (artTransformListener != null) {//triger the listener to send back the processed image to the activity
+                if (artTransformListener != null) {
                     artTransformListener.onTransformProcessed(img);
                     Log.d("AsyncTask", "Transform " + msg.what + " Finished!");
                 }
             }
+
         }
     }
 
