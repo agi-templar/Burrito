@@ -33,12 +33,14 @@
         android:layout_below="@+id/spinner"
         android:id="@+id/statusText2" />
 
+
     <edu.asu.msrs.artceleration.ArtView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@color/colorAccent"
         android:id="@+id/artView"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/spinner" />
+
 
 </RelativeLayout>

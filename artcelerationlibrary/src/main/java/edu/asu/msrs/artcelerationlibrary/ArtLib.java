@@ -7,14 +7,20 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.MemoryFile;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.util.Log;
+
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformService;
 
@@ -23,10 +29,13 @@ import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformServic
  */
 
 public class ArtLib {
-    private TransformHandler artlistener;
+
+    private TransformHandler artTransformListener;
     private Activity mActivity;
     private Messenger mServiceMessenger;
     private boolean mBound = false;
+
+    final Messenger mArtLibMessenger = new Messenger(new ArtLibHandler());
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -44,6 +53,7 @@ public class ArtLib {
     };
 
 
+
     public ArtLib(Activity activity){
         mActivity = activity;
         init();
@@ -53,6 +63,7 @@ public class ArtLib {
 
         Intent intent = new Intent(mActivity, ArtTransformService.class);
         mActivity.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+
     }
 
     public String[] getTransformsArray(){
@@ -70,36 +81,79 @@ public class ArtLib {
     }
 
     public void registerHandler(TransformHandler artlistener){
-        this.artlistener=artlistener;
+        this.artTransformListener =artlistener;
     }
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
 
-        Bundle bundle = new Bundle();
+        Bundle dataBundle = new Bundle();
 
         try {
-            MemoryFile imgFile = new MemoryFile("RawImage", 30);
-            ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(imgFile);
-            bundle.putParcelable("pfd", pfd);
+            int width = img.getWidth();
+            int height = img.getHeight();
+            int  bytes = img.getByteCount();
+
+            ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
+            img.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
+            byte[] byteArray = buffer.array();
+
+            MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
+            memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
+            ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
+            memoryFile.close();
+
+            dataBundle.putIntArray("intArgs", intArgs);
+            dataBundle.putFloatArray("floatArgs", floatArgs);
+            dataBundle.putParcelable("pfd", pfd);
+
+            Message message = Message.obtain(null,index, width, height);
+            message.setData(dataBundle);
+            message.replyTo = mArtLibMessenger;
+
+            mServiceMessenger.send(message);
+
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        bundle.putIntArray("intArgs", intArgs);
-        bundle.putFloatArray("floatArgs", floatArgs);
-
-        Message message = Message.obtain(null,index);
-        message.setData(bundle);
-
-        try {
-            mServiceMessenger.send(message);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
 
+//        ArtTransformTaskCallable callable = new ArtTransformTaskCallable();
+//        callable.setArtTransformThreadPool(artTransformThreadPool);
+//        artTransformThreadPool.addArtTransformTask(callable);
 
         return true;
+    }
+
+    public class ArtLibHandler extends Handler {
+
+        @Override
+        public void handleMessage(Message msg) {
+            Bundle dataBundle = msg.getData();
+            ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
+            if (pfd == null) {
+                Log.d("pfd", "null");
+            } else {
+                InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
+                //convertInputStreamToBitmap
+                byte[] byteArray = new byte[0];
+                try {
+                    byteArray = IOUtils.toByteArray(istream);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                Bitmap img = Bitmap.createBitmap(msg.arg1, msg.arg2, Bitmap.Config.valueOf("ARGB_8888"));
+                ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+                img.copyPixelsFromBuffer(buffer);
+
+                if (artTransformListener != null) {//triger the listener to send back the processed image to the activity
+                    artTransformListener.onTransformProcessed(img);
+                    Log.d("AsyncTask", "Transform " + msg.what + " Finished!");
+                }
+            }
+        }
     }
 
 }

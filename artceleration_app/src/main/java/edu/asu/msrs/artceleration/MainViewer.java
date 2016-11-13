@@ -1,6 +1,5 @@
 package edu.asu.msrs.artceleration;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.camera2.CameraDevice;
@@ -16,11 +15,13 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Executor;
 
 import edu.asu.msrs.artcelerationlibrary.ArtLib;
 import edu.asu.msrs.artcelerationlibrary.TransformHandler;
 import edu.asu.msrs.artcelerationlibrary.TransformTest;
-import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformService;
+import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformThreadPool;
 
 public class MainViewer extends AppCompatActivity {
     static {
@@ -33,6 +34,7 @@ public class MainViewer extends AppCompatActivity {
     private ArtLib artlib;
     private CaptureRequest cm;
     private CameraDevice cd;
+
     public static final String KEY_TRANSFORM_OPTION = "TransformType";
 
     android.hardware.camera2.CaptureRequest cr;
@@ -40,6 +42,10 @@ public class MainViewer extends AppCompatActivity {
     TransformTest[] tests;
     String[] transforms;
     Bitmap src_img;
+    private ArtTransformThreadPool mArtTransformThreadPool;
+    private Executor threadPool;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +61,7 @@ public class MainViewer extends AppCompatActivity {
         artview = (ArtView) findViewById(R.id.artView);
 
         artlib = new ArtLib(MainViewer.this);
+
 
         artlib.registerHandler(new TransformHandler() {
             @Override
@@ -73,7 +80,9 @@ public class MainViewer extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 TransformTest t = tests[position];
                 if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)){
-                    makeToast("Transform requested : "+ transforms[t.transformType]);
+
+                makeToast("Transform requested : "+ transforms[t.transformType]);
+
 
                 }else{
                     makeToast("Transform request failed"+ transforms[t.transformType]);
@@ -88,7 +97,9 @@ public class MainViewer extends AppCompatActivity {
 
     }
 
+
     private void initSpinner() {
+
         testsArray = new ArrayList<String>();
         tests = artlib.getTestsArray();
         transforms = artlib.getTransformsArray();
@@ -103,4 +114,7 @@ public class MainViewer extends AppCompatActivity {
         Toast.makeText(getBaseContext(), str,
                 Toast.LENGTH_SHORT).show();
     }
+
+
+
 }
