@@ -22,12 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformHandler;
 import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformService;
-import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformTaskCallable;
-import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformThreadPool;
-
-import static edu.asu.msrs.artcelerationlibrary.R.styleable.ArtView;
 
 /**
  * Created by rlikamwa on 10/2/2016.
@@ -35,7 +30,7 @@ import static edu.asu.msrs.artcelerationlibrary.R.styleable.ArtView;
 
 public class ArtLib {
 
-    private TransformHandler artlistener;
+    private TransformHandler artTransformListener;
     private Activity mActivity;
     private Messenger mServiceMessenger;
     private boolean mBound = false;
@@ -86,7 +81,7 @@ public class ArtLib {
     }
 
     public void registerHandler(TransformHandler artlistener){
-        this.artlistener=artlistener;
+        this.artTransformListener =artlistener;
     }
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
@@ -140,7 +135,6 @@ public class ArtLib {
             if (pfd == null) {
                 Log.d("pfd", "null");
             } else {
-                Log.d("image ", "has been sent back to the client");
                 InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
                 //convertInputStreamToBitmap
                 byte[] byteArray = new byte[0];
@@ -154,8 +148,9 @@ public class ArtLib {
                 ByteBuffer buffer = ByteBuffer.wrap(byteArray);
                 img.copyPixelsFromBuffer(buffer);
 
-                if (artlistener != null) {//triger the listener to send back the processed image to the activity
-                    artlistener.onTransformProcessed(img);
+                if (artTransformListener != null) {//triger the listener to send back the processed image to the activity
+                    artTransformListener.onTransformProcessed(img);
+                    Log.d("AsyncTask", "Transform " + msg.what + " Finished!");
                 }
             }
         }
