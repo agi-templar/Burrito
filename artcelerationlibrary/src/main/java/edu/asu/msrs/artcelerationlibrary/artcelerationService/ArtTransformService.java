@@ -8,13 +8,20 @@ import android.os.Messenger;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 
 public class ArtTransformService extends Service{
 
+    static {
+        System.loadLibrary("native-lib");
+    }
+
     private static final String TAG = ArtTransformService.class.getSimpleName();
 
-    public Messenger mMessenger = new Messenger(new ArtTransformHandler());
+    final Messenger mMessenger = new Messenger(new ArtTransformHandler());
     private ArtTransformHandler mArtTransformHandler;
+
     public ArtTransformService() {
     }
 
@@ -38,9 +45,9 @@ public class ArtTransformService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Message message = Message.obtain();
-        message.arg1 = startId;
-        mArtTransformHandler.sendMessage(message);
+        //Message message = Message.obtain();
+//        message.arg1 = startId;
+//        mArtTransformHandler.sendMessage(message);
         return Service.START_REDELIVER_INTENT;
     }
 

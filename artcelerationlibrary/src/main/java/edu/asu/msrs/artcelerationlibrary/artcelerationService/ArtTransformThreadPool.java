@@ -26,7 +26,6 @@ public class ArtTransformThreadPool {
     private List<Future> mDoingArtTransform;
     private final ExecutorService mArtTransformThreadPool;
 
-    private WeakReference<UiThreadCallback> uiThreadCallbackWeakReference;
 
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT;
     private static final int KEEP_ALIVE_TIME = 1;
@@ -76,15 +75,15 @@ public class ArtTransformThreadPool {
         }
     }
 
-    public void setUiThreadCallback(UiThreadCallback uiThreadCallback) {
-        this.uiThreadCallbackWeakReference = new WeakReference<UiThreadCallback>(uiThreadCallback);
-    }
-
-    public void sendMessageToUiThread(Message message){
-        if(uiThreadCallbackWeakReference != null && uiThreadCallbackWeakReference.get() != null) {
-            uiThreadCallbackWeakReference.get().publishToUiThread(message);
-        }
-    }
+//    public void setUiThreadCallback(UiThreadCallback uiThreadCallback) {
+//        this.uiThreadCallbackWeakReference = new WeakReference<UiThreadCallback>(uiThreadCallback);
+//    }
+//
+//    public void sendMessageToUiThread(Message message){
+//        if(uiThreadCallbackWeakReference != null && uiThreadCallbackWeakReference.get() != null) {
+//            uiThreadCallbackWeakReference.get().publishToUiThread(message);
+//        }
+//    }
 
     private static class BackgroundThreadFactory implements ThreadFactory {
         private static int sTag = 1;

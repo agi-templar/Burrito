@@ -43,12 +43,12 @@ public class ArtTransformTaskCallable implements Callable{
                     String.valueOf(Thread.currentThread().getId()) + " " +
                     String.valueOf(Thread.currentThread().getName()) + " completed");
 
-            if(mArtTransformThreadPoolWeakReference != null
-                    && mArtTransformThreadPoolWeakReference.get() != null) {
-
-                Log.d(TAG, mArtTransformThreadPoolWeakReference.toString());
-                mArtTransformThreadPoolWeakReference.get().sendMessageToUiThread(message);
-            }
+//            if(mArtTransformThreadPoolWeakReference != null
+//                    && mArtTransformThreadPoolWeakReference.get() != null) {
+//
+//                Log.d(TAG, mArtTransformThreadPoolWeakReference.toString());
+//                mArtTransformThreadPoolWeakReference.get().sendMessageToUiThread(message);
+//            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
