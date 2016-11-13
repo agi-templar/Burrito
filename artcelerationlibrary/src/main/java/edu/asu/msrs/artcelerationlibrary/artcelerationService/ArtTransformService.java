@@ -45,9 +45,6 @@ public class ArtTransformService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        //Message message = Message.obtain();
-//        message.arg1 = startId;
-//        mArtTransformHandler.sendMessage(message);
         return Service.START_REDELIVER_INTENT;
     }
 

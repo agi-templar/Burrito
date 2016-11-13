@@ -3,7 +3,6 @@ package edu.asu.msrs.artcelerationlibrary.artcelerationService;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
@@ -44,7 +43,7 @@ public class ArtTransformHandler extends Handler {
         targetMessenger = msg.replyTo;
         mArtTransformAsyncTasks = new ArrayList<>();
 
-        switch (msg.what){
+        switch (msg.what) {
             case 0:
                 Log.d("doTransform", "Gaussian_Blur");
 
@@ -88,7 +87,7 @@ public class ArtTransformHandler extends Handler {
 
     }
 
-    public class ArtTransformAsyncTask extends AsyncTask <Bitmap, Void, Void> {
+    public class ArtTransformAsyncTask extends AsyncTask<Bitmap, Void, Void> {
 
         private Bitmap rawBitmap;
 
@@ -109,22 +108,29 @@ public class ArtTransformHandler extends Handler {
         protected void onPostExecute(Void aVoid) {
 
             mArtTransformAsyncTasks.remove(this);
-            if(mArtTransformAsyncTasks.size() == 0){
+            if (mArtTransformAsyncTasks.size() == 0) {
                 Log.d("AsyncTask", "All Tasks Finished");
             }
-            imageProcessed(rawBitmap);
+            notifyArtLib(rawBitmap);
 
         }
 
     }
 
 
+    /**
+     * loadImage from message sent by ArtLib
+     *
+     * @param msg
+     * @return
+     * @throws IOException
+     */
     private Bitmap loadImage(Message msg) throws IOException {
         Bundle dataBundle = msg.getData();
         ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
         InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
         //Convert the inputStream to bitmap
-        byte[] byteArray =  IOUtils.toByteArray(inputStream);
+        byte[] byteArray = IOUtils.toByteArray(inputStream);
         //The configuration is ARGB_8888, if the configuration changed in the application, here should be changed
         // a better way is to pass the parameter through the message.
         Bitmap.Config configBmp = Bitmap.Config.valueOf("ARGB_8888");
@@ -135,6 +141,12 @@ public class ArtTransformHandler extends Handler {
     }
 
 
+    /**
+     * change the Saturation
+     *
+     * @param img
+     * @return
+     */
     private Bitmap changeSaturation(Bitmap img) {
         ColorMatrix colorMatrixSaturation = new ColorMatrix();
         ColorMatrix allColorMatrix = new ColorMatrix();
@@ -156,6 +168,12 @@ public class ArtTransformHandler extends Handler {
         return newBitmap;
     }
 
+    /**
+     * change the RGB value
+     *
+     * @param img
+     * @return
+     */
     private Bitmap changeHSL(Bitmap img) {
         ColorMatrix colorMatrixchangeHSL = new ColorMatrix();
         ColorMatrix allColorMatrix = new ColorMatrix();
@@ -179,6 +197,12 @@ public class ArtTransformHandler extends Handler {
         return newBitmap;
     }
 
+    /**
+     * change the light
+     *
+     * @param img
+     * @return
+     */
     private Bitmap changeLight(Bitmap img) {
         ColorMatrix colorMatrixchangeLight = new ColorMatrix();
         ColorMatrix allColorMatrix = new ColorMatrix();
@@ -200,11 +224,16 @@ public class ArtTransformHandler extends Handler {
         return newBitmap;
     }
 
-    private void imageProcessed(Bitmap img){
+    /**
+     * when the artTransform is done, send a message to tell the Artlib(client)
+     *
+     * @param img
+     */
+    private void notifyArtLib(Bitmap img) {
         int width = img.getWidth();
         int height = img.getHeight();
         int what = 0;
-        Message msg = Message.obtain(null, what,width,height);
+        Message msg = Message.obtain(null, what, width, height);
         msg.replyTo = targetMessenger;
 
         //Message msg = Message.obtain(null, what);
@@ -219,10 +248,6 @@ public class ArtTransformHandler extends Handler {
             img.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
             byte[] byteArray = buffer.array();
 
-            /*ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            img.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();*/
-            //Secondly, put the stream into the memory file.
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
             memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
             ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
