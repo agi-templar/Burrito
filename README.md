@@ -204,6 +204,19 @@ public class ArtTransformAsyncTask extends AsyncTask<Bundle, Void, Void> {
                 }
             return null;
         }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
+            mArtTransformAsyncTasks.remove(this);
+            if (mArtTransformAsyncTasks.size() == 0) {
+                Log.d("AsyncTask", "All Tasks Finished");
+            }
+            notifyArtLib(rawBitmap);
+
+        }
+
+    }
 ```
 and mentioned methods partly are:
 ```java
