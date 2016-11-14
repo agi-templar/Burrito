@@ -105,6 +105,9 @@ public class ArtLib {
             dataBundle.putIntArray("intArgs", intArgs);
             dataBundle.putFloatArray("floatArgs", floatArgs);
             dataBundle.putParcelable("pfd", pfd);
+            dataBundle.putInt("width", width);
+            dataBundle.putInt("height", height);
+            dataBundle.putInt("index", index);
 
             // create message to be sent to ArtTransformService
             Message message = Message.obtain(null, index, width, height);
@@ -147,7 +150,7 @@ public class ArtLib {
 
                 if (artTransformListener != null) {
                     artTransformListener.onTransformProcessed(img);
-                    Log.d("AsyncTask", "Transform " + msg.what + " Finished!");
+                    Log.d("AsyncTask", "Transform Finished!");
                 }
             }
 

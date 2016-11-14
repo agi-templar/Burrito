@@ -2,10 +2,12 @@ package edu.asu.msrs.artcelerationlibrary.artcelerationService;
 
 
 import android.graphics.Bitmap;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.security.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -42,40 +45,37 @@ public class ArtTransformHandler extends Handler {
 
         targetMessenger = msg.replyTo;
         mArtTransformAsyncTasks = new ArrayList<>();
+        Bundle dataBundle = msg.getData();
+
 
         switch (msg.what) {
             case 0:
-                Log.d("doTransform", "Gaussian_Blur");
+                Log.d("AsyncTask", "Gaussian_Blur");
 
                 try {
-                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), loadImage(msg));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+
                 } finally {
                     Log.d("AsyncTask", "Gaussian_Blur Finished");
                 }
 
                 break;
             case 1:
-                Log.d("doTransform", "Neon_Edges");
+                Log.d("AsyncTask", "Neon_Edges");
 
                 try {
-                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), loadImage(msg));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+
                 } finally {
                     Log.d("AsyncTask", "Neon_Edges Finished");
                 }
-
-
                 break;
             case 2:
-                Log.d("doTransform", "Color_Filter");
+                Log.d("AsyncTask", "Color_Filter");
 
                 try {
-                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), loadImage(msg));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+
                 } finally {
                     Log.d("AsyncTask", "Color_Filter Finished");
                 }
@@ -87,7 +87,7 @@ public class ArtTransformHandler extends Handler {
 
     }
 
-    public class ArtTransformAsyncTask extends AsyncTask<Bitmap, Void, Void> {
+    public class ArtTransformAsyncTask extends AsyncTask<Bundle, Void, Void> {
 
         private Bitmap rawBitmap;
 
@@ -97,10 +97,37 @@ public class ArtTransformHandler extends Handler {
         }
 
         @Override
-        protected Void doInBackground(Bitmap... params) {
+        protected Void doInBackground(Bundle... params) {
 
-            rawBitmap = changeLight(params[0]);
+            Log.d("Message", String.valueOf(params[0]));
 
+                switch (params[0].getInt("index")) {
+
+                    case 0:
+                        try {
+                            rawBitmap = changeSaturation(loadImage(params[0]));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 1:
+                        try {
+                            rawBitmap = changeHSL(loadImage(params[0]));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 2:
+                        try {
+                            rawBitmap = changeLight(loadImage(params[0]));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    default:
+                        break;
+
+                }
             return null;
         }
 
@@ -121,12 +148,12 @@ public class ArtTransformHandler extends Handler {
     /**
      * loadImage from message sent by ArtLib
      *
-     * @param msg
+     * @param dataBundle
      * @return
      * @throws IOException
      */
-    private Bitmap loadImage(Message msg) throws IOException {
-        Bundle dataBundle = msg.getData();
+    private Bitmap loadImage(Bundle dataBundle) throws IOException {
+        //Bundle dataBundle = msg.getData();
         ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
         InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
         //Convert the inputStream to bitmap
@@ -134,7 +161,7 @@ public class ArtTransformHandler extends Handler {
         //The configuration is ARGB_8888, if the configuration changed in the application, here should be changed
         // a better way is to pass the parameter through the message.
         Bitmap.Config configBmp = Bitmap.Config.valueOf("ARGB_8888");
-        Bitmap rawBitmap = Bitmap.createBitmap(msg.arg1, msg.arg2, configBmp);
+        Bitmap rawBitmap = Bitmap.createBitmap(dataBundle.getInt("width"), dataBundle.getInt("height"), configBmp);
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);
         rawBitmap.copyPixelsFromBuffer(buffer);
         return rawBitmap;
@@ -152,7 +179,7 @@ public class ArtTransformHandler extends Handler {
         ColorMatrix allColorMatrix = new ColorMatrix();
 
         colorMatrixSaturation.reset();
-        colorMatrixSaturation.setSaturation(0.30f);
+        colorMatrixSaturation.setSaturation(0.40f);
 
         allColorMatrix.reset();
         allColorMatrix.postConcat(colorMatrixSaturation);
@@ -225,7 +252,28 @@ public class ArtTransformHandler extends Handler {
     }
 
     /**
-     * when the artTransform is done, send a message to tell the Artlib(client)
+     * do GaussianBlur
+     *
+     * @param img
+     * @return
+     */
+    private Bitmap GaussianBlur(Bitmap img) {
+
+        double[][] GaussianBlurMatrix = new double[][]{
+                {1, 2, 1},
+                {2, 4, 2},
+                {1, 2, 1}
+        };
+        ConvolutionMatrix convMatrix = new ConvolutionMatrix(3);
+        convMatrix.applyConfig(GaussianBlurMatrix);
+        convMatrix.Factor = 16;
+        convMatrix.Offset = 0;
+        return ConvolutionMatrix.computeConvolution3x3(img, convMatrix);
+    }
+
+
+    /**
+     * when the artTransform is done, send a message to tell the ArtLib(client)
      *
      * @param img
      */
@@ -234,6 +282,8 @@ public class ArtTransformHandler extends Handler {
         int height = img.getHeight();
         int what = 0;
         Message msg = Message.obtain(null, what, width, height);
+        long tsLong = System.currentTimeMillis() / 1000;
+        //msg.what = (int)tsLong;
         msg.replyTo = targetMessenger;
 
         //Message msg = Message.obtain(null, what);
