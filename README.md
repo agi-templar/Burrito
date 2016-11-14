@@ -113,33 +113,55 @@ public class ArtTransformHandler extends Handler {
 
         targetMessenger = msg.replyTo;
         mArtTransformAsyncTasks = new ArrayList<>();
+        Bundle dataBundle = msg.getData();
+
 
         switch (msg.what) {
             case 0:
-                Log.d("doTransform", "Gaussian_Blur");
+                Log.d("AsyncTask", "Gaussian_Blur");
 
                 try {
-                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), loadImage(msg));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+
                 } finally {
                     Log.d("AsyncTask", "Gaussian_Blur Finished");
                 }
 
                 break;
-            ...
+            case 1:
+                Log.d("AsyncTask", "Neon_Edges");
+
+                try {
+                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+
+                } finally {
+                    Log.d("AsyncTask", "Neon_Edges Finished");
+                }
+                break;
+            case 2:
+                Log.d("AsyncTask", "Color_Filter");
+
+                try {
+                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+
+                } finally {
+                    Log.d("AsyncTask", "Color_Filter Finished");
+                }
+
+                break;
             default:
                 break;
         }
 
     }
-     ...
+    ...
+}
 ```
 Here we handle the message from the client, and based on "msg.what", we start different AsyncTask. The point is, we use ThreadPool to handle all the Asynctasks, which could definitely speed up our processing.
 
 ### ArtTransformAsyncTask
 ```java
-public class ArtTransformAsyncTask extends AsyncTask<Bitmap, Void, Void> {
+public class ArtTransformAsyncTask extends AsyncTask<Bundle, Void, Void> {
 
         private Bitmap rawBitmap;
 
@@ -149,20 +171,39 @@ public class ArtTransformAsyncTask extends AsyncTask<Bitmap, Void, Void> {
         }
 
         @Override
-        protected Void doInBackground(Bitmap... params) {
-            rawBitmap = changeLight(params[0]);
+        protected Void doInBackground(Bundle... params) {
+
+            Log.d("Message", String.valueOf(params[0]));
+
+                switch (params[0].getInt("index")) {
+
+                    case 0:
+                        try {
+                            rawBitmap = changeSaturation(loadImage(params[0]));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 1:
+                        try {
+                            rawBitmap = changeHSL(loadImage(params[0]));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 2:
+                        try {
+                            rawBitmap = changeLight(loadImage(params[0]));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    default:
+                        break;
+
+                }
             return null;
         }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            mArtTransformAsyncTasks.remove(this);
-            if (mArtTransformAsyncTasks.size() == 0) {
-                Log.d("AsyncTask", "All Tasks Finished");
-            }
-            notifyArtLib(rawBitmap);
-        }
-    }
 ```
 and mentioned methods partly are:
 ```java
