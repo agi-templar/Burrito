@@ -42,6 +42,8 @@ A thread pool is a good idea. Android provides some defined threadpools, like "E
 Another thing we need think a little bit is how to queue how task. We may make several ArtTransform requests at the same time, or at least, due to the processing time, there would be some requests processing simultaneously.
 Android also introduces some great tools for us to handle the multi-thread task. It's called "__AsyncTask__".
 
+__You could click [here](https://youtu.be/msGpCSgSxCE) to have a look how the app runs so smoothly with our strategy.__
+
 >**Definition from Android Docs:**
 AsyncTask is designed to be a helper class around Thread and Handler and does not constitute a generic threading framework. AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you need to keep threads running for long periods of time, it is highly recommended you use the various APIs provided by the java.util.concurrent package such as Executor, ThreadPoolExecutor and FutureTask.
 
