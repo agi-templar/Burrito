@@ -31,7 +31,7 @@ Above is a big picture of the whole story. We assumes __the artTransformService_
 
 Now, we hire a girl to help us do the “Looper” job. Her name is “__Looper__”. What she does is: Every time she notices the cook is about to finish an order, she grabs the next order from the “__Message Queue__” and gives it to the cook. That’s basically a __FIFO manner__, because of the existing of message pool.
 
-## Further, AsyncTask and ThreadPool
+## AsyncTask + ThreadPool = Ultra Smooth!
 
 ![](https://s3.amazonaws.com/artceleration/AsyncTask.png)
 
