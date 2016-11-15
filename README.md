@@ -3,6 +3,8 @@
 
 Team Member: Ruibo Liu & Tian Xia
 
+__You could click [here](https://youtu.be/msGpCSgSxCE) to have a look how the app runs so smoothly with our strategy.__
+
 ![](https://s3.amazonaws.com/artceleration/effect.jpg)
 
 ## Development Goals
@@ -46,8 +48,6 @@ Android also introduces some great tools for us to handle the multi-thread task.
 AsyncTask is designed to be a helper class around Thread and Handler and does not constitute a generic threading framework. AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you need to keep threads running for long periods of time, it is highly recommended you use the various APIs provided by the java.util.concurrent package such as Executor, ThreadPoolExecutor and FutureTask.
 
 So my strategy is, everytime the service receives message from the client (here, it's ArtLib.class.), it would call a AsyncTask, where we retrieve data from message, do the transform and send back the message including the proceeded image to the client. The client would implement the listener method of activity which would notify the main activity to update its UI elements.  
-
-__You could click [here](https://youtu.be/msGpCSgSxCE) to have a look how the app runs so smoothly with our strategy.__
 
 ## Corresponding Code Strategy
 ### ArtTransformService
