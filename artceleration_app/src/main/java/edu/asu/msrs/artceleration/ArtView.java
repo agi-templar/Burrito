@@ -56,6 +56,9 @@ public class ArtView extends View {
         invalidate();
         return true;
     }
+
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);

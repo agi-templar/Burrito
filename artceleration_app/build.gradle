@@ -40,4 +40,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile project(':artcelerationlibrary')
     compile 'it.sephiroth.android.library.bottomnavigation:bottom-navigation:1.0.9'
+    compile 'com.aurelhubert:ahbottomnavigation:2.0.1'
 }

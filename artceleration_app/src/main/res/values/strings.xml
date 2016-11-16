@@ -1,3 +1,15 @@
 <resources>
-    <string name="app_name">Artceleration</string>
+    <string name="app_name">Burrito</string>
+    <string name="tab_1">Gaussian</string>
+    <string name="tab_2">Neon</string>
+    <string name="tab_3">Color Filter</string>
+    <string name="tab_4">Saturation</string>
+    <string name="tab_5">HSL</string>
+
+    <string name="menu_1">Menu 1</string>
+    <string name="menu_2">Menu 2</string>
+    <string name="menu_3">Menu 3</string>
+    <string name="menu_4">Menu 4</string>
+    <string name="menu_5">Menu 5</string>
+
 </resources>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/activity_main_viewer"
@@ -11,36 +11,46 @@
                 android:paddingTop="@dimen/activity_vertical_margin"
                 tools:context="edu.asu.msrs.artceleration.MainViewer">
 
-    <Spinner
+    <RelativeLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:id="@+id/spinner"
+            android:layout_alignParentTop="true"
+            android:spinnerMode="dropdown" />
+
+        <TextView
+            android:text="TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/spinner"
+            android:id="@+id/statusText1" />
+        <TextView
+            android:text="TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/spinner"
+            android:id="@+id/statusText2" />
+
+
+        <edu.asu.msrs.artceleration.ArtView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/artView"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/spinner" android:layout_gravity="center_vertical|center_horizontal"/>
+
+    </RelativeLayout>
+
+    <com.aurelhubert.ahbottomnavigation.AHBottomNavigation
+        android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:id="@+id/spinner"
-        android:layout_alignParentTop="true"
-        android:spinnerMode="dropdown" />
+        android:layout_gravity="bottom"
+        app:selectedBackgroundVisible="false"/>
 
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/spinner"
-        android:id="@+id/statusText1" />
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/spinner"
-        android:id="@+id/statusText2" />
-
-
-    <edu.asu.msrs.artceleration.ArtView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorAccent"
-        android:id="@+id/artView"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/spinner" />
-
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>
