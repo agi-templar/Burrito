@@ -3,7 +3,7 @@
 
 Team Member: Ruibo Liu & Tian Xia
 
-__You could click [here](https://youtu.be/msGpCSgSxCE) to have a look how the app runs so smoothly with our strategy.__
+__You could click [here](https://youtu.be/U-gQQsU-qsU) to have a look how the app runs so smoothly with our strategy.__
 
 ![](https://s3.amazonaws.com/artceleration/effect.jpg)
 
