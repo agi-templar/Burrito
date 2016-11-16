@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -108,23 +109,37 @@ public class MainViewer extends AppCompatActivity {
 
         AHBottomNavigation bottomNavigation = (AHBottomNavigation) findViewById(R.id.bottom_navigation);
 
-        AHBottomNavigationItem item1 = new AHBottomNavigationItem("a", R.drawable.ic_maps_place, R.color.color_tab_1);
-        AHBottomNavigationItem item2 = new AHBottomNavigationItem("b", R.drawable.ic_maps_local_bar, R.color.color_tab_2);
-        AHBottomNavigationItem item3 = new AHBottomNavigationItem("c", R.drawable.ic_maps_local_restaurant, R.color.color_tab_3);
+        AHBottomNavigationItem item1 = new AHBottomNavigationItem(getString(R.string.tab_1),
+                ContextCompat.getDrawable(this, R.drawable.ic_blur_circular_white_24dp),
+                ContextCompat.getColor(this, R.color.color_tab_1));
+        AHBottomNavigationItem item2 = new AHBottomNavigationItem(getString(R.string.tab_2),
+                ContextCompat.getDrawable(this, R.drawable.ic_palette_white_24dp),
+                ContextCompat.getColor(this, R.color.color_tab_2));
+        AHBottomNavigationItem item3 = new AHBottomNavigationItem(getString(R.string.tab_3),
+                ContextCompat.getDrawable(this, R.drawable.ic_brightness_4_white_24dp),
+                ContextCompat.getColor(this, R.color.color_tab_3));
+        AHBottomNavigationItem item4 = new AHBottomNavigationItem(getString(R.string.tab_4),
+                ContextCompat.getDrawable(this, R.drawable.ic_filter_vintage_white_24dp),
+                ContextCompat.getColor(this, R.color.color_tab_4));
+        AHBottomNavigationItem item5 = new AHBottomNavigationItem(getString(R.string.tab_5),
+                ContextCompat.getDrawable(this, R.drawable.ic_looks_white_24dp),
+                ContextCompat.getColor(this, R.color.color_tab_5));
 
         bottomNavigation.addItem(item1);
         bottomNavigation.addItem(item2);
         bottomNavigation.addItem(item3);
+        bottomNavigation.addItem(item4);
+        bottomNavigation.addItem(item5);
 
-        bottomNavigation.setDefaultBackgroundColor(Color.parseColor("#FEFEFE"));
+        //bottomNavigation.setDefaultBackgroundColor(Color.parseColor("#FEFEFE"));
 
         bottomNavigation.setTranslucentNavigationEnabled(true);
 
-        bottomNavigation.setAccentColor(Color.parseColor("#F63D2B"));
-        bottomNavigation.setInactiveColor(Color.parseColor("#747474"));
+//        bottomNavigation.setAccentColor(Color.parseColor("#F63D2B"));
+//        bottomNavigation.setInactiveColor(Color.parseColor("#747474"));
 
         //  Enables Reveal effect
-        bottomNavigation.setColored(false);
+        bottomNavigation.setColored(true);
 
         bottomNavigation.setCurrentItem(0);
 
@@ -133,14 +148,9 @@ public class MainViewer extends AppCompatActivity {
             public boolean onTabSelected(int position, boolean wasSelected) {
                 // Do something cool here...
 
-                Toast.makeText(MainViewer.this, "select", Toast.LENGTH_SHORT).show();
-
                 TransformTest t = tests[position];
                 if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)) {
-
                     makeToast("Transform requested : " + transforms[t.transformType]);
-
-
                 } else {
                     makeToast("Transform request failed" + transforms[t.transformType]);
                 }

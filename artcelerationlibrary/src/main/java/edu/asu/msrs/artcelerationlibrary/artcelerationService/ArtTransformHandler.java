@@ -46,44 +46,64 @@ public class ArtTransformHandler extends Handler {
         targetMessenger = msg.replyTo;
         mArtTransformAsyncTasks = new ArrayList<>();
         Bundle dataBundle = msg.getData();
+        new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
 
-
-        switch (msg.what) {
-            case 0:
-                Log.d("AsyncTask", "Gaussian_Blur");
-
-                try {
-                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
-
-                } finally {
-                    Log.d("AsyncTask", "Gaussian_Blur Finished");
-                }
-
-                break;
-            case 1:
-                Log.d("AsyncTask", "Neon_Edges");
-
-                try {
-                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
-
-                } finally {
-                    Log.d("AsyncTask", "Neon_Edges Finished");
-                }
-                break;
-            case 2:
-                Log.d("AsyncTask", "Color_Filter");
-
-                try {
-                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
-
-                } finally {
-                    Log.d("AsyncTask", "Color_Filter Finished");
-                }
-
-                break;
-            default:
-                break;
-        }
+//        switch (msg.what) {
+//            case 0:
+//                Log.d("AsyncTask", "Gaussian_Blur");
+//
+//                try {
+//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+//
+//                } finally {
+//                    Log.d("AsyncTask", "Gaussian_Blur Finished");
+//                }
+//
+//                break;
+//            case 1:
+//                Log.d("AsyncTask", "Neon_Edges");
+//
+//                try {
+//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+//
+//                } finally {
+//                    Log.d("AsyncTask", "Neon_Edges Finished");
+//                }
+//                break;
+//            case 2:
+//                Log.d("AsyncTask", "Color_Filter");
+//
+//                try {
+//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+//
+//                } finally {
+//                    Log.d("AsyncTask", "Color_Filter Finished");
+//                }
+//                break;
+//            case 3:
+//                Log.d("AsyncTask", "Color_Filter");
+//
+//                try {
+//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+//
+//                } finally {
+//                    Log.d("AsyncTask", "Color_Filter Finished");
+//                }
+//                break;
+//            case 4:
+//                Log.d("AsyncTask", "Color_Filter");
+//
+//                try {
+//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
+//
+//                } finally {
+//                    Log.d("AsyncTask", "Color_Filter Finished");
+//                }
+//                break;
+//
+//            default:
+//                break;
+//        }
 
     }
 
@@ -120,6 +140,20 @@ public class ArtTransformHandler extends Handler {
                     case 2:
                         try {
                             rawBitmap = changeLight(loadImage(params[0]));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 3:
+                        try {
+                            rawBitmap = GaussianBlur(loadImage(params[0]));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 4:
+                        try {
+                            rawBitmap = changeSaturation(loadImage(params[0]));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
