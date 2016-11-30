@@ -8,6 +8,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,16 +18,25 @@ import android.widget.Toast;
 
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.Target;
+import com.jph.takephoto.model.TImage;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 import edu.asu.msrs.artcelerationlibrary.ArtLib;
 import edu.asu.msrs.artcelerationlibrary.TransformHandler;
 import edu.asu.msrs.artcelerationlibrary.TransformTest;
 import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformThreadPool;
+
+import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
 
 public class MainViewer extends AppCompatActivity {
     static {
@@ -47,10 +57,7 @@ public class MainViewer extends AppCompatActivity {
     ArrayList<String> testsArray;
     TransformTest[] tests;
     String[] transforms;
-    Bitmap src_img;
-    private ArtTransformThreadPool mArtTransformThreadPool;
-    private Executor threadPool;
-
+    static Bitmap src_img;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,49 +66,50 @@ public class MainViewer extends AppCompatActivity {
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
         src_img = BitmapFactory.decodeResource(getResources(), R.drawable.asuhayden, opts);
-
-
-        spinner = (Spinner) findViewById(R.id.spinner);
-        status1 = (TextView) findViewById(R.id.statusText1);
-        status2 = (TextView) findViewById(R.id.statusText2);
         artview = (ArtView) findViewById(R.id.artView);
 
         artlib = new ArtLib(MainViewer.this);
-
-
         artlib.registerHandler(new TransformHandler() {
             @Override
             public void onTransformProcessed(Bitmap img_out) {
                 artview.setTransBmp(img_out);
             }
         });
-
+        initSpinner();
         initMenu();
 
-        initSpinner();
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, testsArray);
-        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(spinnerArrayAdapter);
 
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                TransformTest t = tests[position];
-                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)) {
-
-                    makeToast("Transform requested : " + transforms[t.transformType]);
+//                        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, testsArray);
+//                        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//                        spinner.setAdapter(spinnerArrayAdapter);
 
 
-                } else {
-                    makeToast("Transform request failed" + transforms[t.transformType]);
-                }
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
 
-            }
-        });
+
+        spinner = (Spinner) findViewById(R.id.spinner);
+        status1 = (TextView) findViewById(R.id.statusText1);
+        status2 = (TextView) findViewById(R.id.statusText2);
+
+//        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                TransformTest t = tests[position];
+//                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)) {
+//
+//                    makeToast("Transform requested : " + transforms[t.transformType]);
+//
+//
+//                } else {
+//                    makeToast("Transform request failed" + transforms[t.transformType]);
+//                }
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> parent) {
+//
+//            }
+//        });
 
     }
 
@@ -149,6 +157,7 @@ public class MainViewer extends AppCompatActivity {
                 // Do something cool here...
 
                 TransformTest t = tests[position];
+
                 if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)) {
                     makeToast("Transform requested : " + transforms[t.transformType]);
                 } else {

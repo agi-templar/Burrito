@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 public class ArtView extends View {
     private static final String TAG = "ArtView";
@@ -33,6 +34,7 @@ public class ArtView extends View {
     }
 
     public ArtView(Context context, AttributeSet attrs, int defStyle) {
+
         super(context, attrs, defStyle);
         init();
     }
@@ -62,6 +64,7 @@ public class ArtView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
         int paddingLeft = getPaddingLeft();
         int paddingTop = getPaddingTop();
         int paddingRight = getPaddingRight();
@@ -70,7 +73,7 @@ public class ArtView extends View {
         int contentWidth = getWidth() - paddingLeft - paddingRight;
         int contentHeight = getHeight() - paddingTop - paddingBottom;
 
-        canvas.drawBitmap(imgbmp,0,0,null);
+        canvas.drawBitmap(imgbmp,0,0,null); // 改过
         canvas.drawBitmap(transbmp_trunc,offset_x,0,null);
     }
     public void setImgBmp(Bitmap b){
@@ -80,6 +83,8 @@ public class ArtView extends View {
     public void setTransBmp(Bitmap b){
         transbmp = b;
         transbmp_trunc =Bitmap.createBitmap(transbmp, offset_x,0,transbmp.getWidth()-offset_x, transbmp.getHeight());
+        invalidate();
+        requestLayout();
     }
     public Bitmap getImgBmp(){
         return imgbmp;
