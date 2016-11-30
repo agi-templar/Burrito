@@ -35,6 +35,7 @@ public class ArtLib {
     private Messenger mServiceMessenger;
     private boolean mBound = false;
 
+
     final Messenger mArtLibMessenger = new Messenger(new ArtLibHandler());
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -96,6 +97,7 @@ public class ArtLib {
 
             // Allocate buffer whose size based on the src_img
             ByteBuffer buffer = ByteBuffer.allocate(bytes);
+            buffer.rewind();
             img.copyPixelsToBuffer(buffer);
             byte[] byteArray = buffer.array();
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
@@ -148,6 +150,7 @@ public class ArtLib {
             } finally {
                 Bitmap img = Bitmap.createBitmap(msg.arg1, msg.arg2, Bitmap.Config.valueOf("ARGB_8888"));
                 ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+                buffer.rewind();
                 img.copyPixelsFromBuffer(buffer);
 
                 if (artTransformListener != null) {

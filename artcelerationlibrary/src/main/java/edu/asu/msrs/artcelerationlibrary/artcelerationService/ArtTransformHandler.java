@@ -39,6 +39,8 @@ public class ArtTransformHandler extends Handler {
     static Messenger targetMessenger;
     List<ArtTransformAsyncTask> mArtTransformAsyncTasks;
 
+    public native void convertToGray(Bitmap bitmapIn,Bitmap bitmapOut);
+
 
     @Override
     public void handleMessage(Message msg) {
@@ -47,63 +49,6 @@ public class ArtTransformHandler extends Handler {
         mArtTransformAsyncTasks = new ArrayList<>();
         Bundle dataBundle = msg.getData();
         new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
-
-//        switch (msg.what) {
-//            case 0:
-//                Log.d("AsyncTask", "Gaussian_Blur");
-//
-//                try {
-//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
-//
-//                } finally {
-//                    Log.d("AsyncTask", "Gaussian_Blur Finished");
-//                }
-//
-//                break;
-//            case 1:
-//                Log.d("AsyncTask", "Neon_Edges");
-//
-//                try {
-//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
-//
-//                } finally {
-//                    Log.d("AsyncTask", "Neon_Edges Finished");
-//                }
-//                break;
-//            case 2:
-//                Log.d("AsyncTask", "Color_Filter");
-//
-//                try {
-//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
-//
-//                } finally {
-//                    Log.d("AsyncTask", "Color_Filter Finished");
-//                }
-//                break;
-//            case 3:
-//                Log.d("AsyncTask", "Color_Filter");
-//
-//                try {
-//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
-//
-//                } finally {
-//                    Log.d("AsyncTask", "Color_Filter Finished");
-//                }
-//                break;
-//            case 4:
-//                Log.d("AsyncTask", "Color_Filter");
-//
-//                try {
-//                    new ArtTransformAsyncTask().executeOnExecutor(Executors.newCachedThreadPool(), dataBundle);
-//
-//                } finally {
-//                    Log.d("AsyncTask", "Color_Filter Finished");
-//                }
-//                break;
-//
-//            default:
-//                break;
-//        }
 
     }
 
@@ -119,13 +64,16 @@ public class ArtTransformHandler extends Handler {
         @Override
         protected Void doInBackground(Bundle... params) {
 
+
+            rawBitmap = Bitmap.createBitmap(1600,1066, Bitmap.Config.valueOf("ARGB_8888"));
+
             Log.d("Message", String.valueOf(params[0]));
 
                 switch (params[0].getInt("index")) {
 
                     case 0:
                         try {
-                            rawBitmap = changeSaturation(loadImage(params[0]));
+                            convertToGray(loadImage(params[0]),rawBitmap);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -197,6 +145,7 @@ public class ArtTransformHandler extends Handler {
         Bitmap.Config configBmp = Bitmap.Config.valueOf("ARGB_8888");
         Bitmap rawBitmap = Bitmap.createBitmap(dataBundle.getInt("width"), dataBundle.getInt("height"), configBmp);
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+        buffer.rewind();
         rawBitmap.copyPixelsFromBuffer(buffer);
         return rawBitmap;
     }
@@ -329,6 +278,7 @@ public class ArtTransformHandler extends Handler {
         try {
             int bytes = img.getByteCount();
             ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
+            buffer.rewind();
             img.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
             byte[] byteArray = buffer.array();
 

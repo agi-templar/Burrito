@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class ArtTransformService extends Service{
 
     static {
-        System.loadLibrary("native-lib");
+        System.loadLibrary("artTransform-lib");
     }
 
     private static final String TAG = ArtTransformService.class.getSimpleName();
