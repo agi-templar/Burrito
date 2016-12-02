@@ -40,8 +40,10 @@ public class ArtView extends View {
     }
 
     public void init(){
-        imgbmp = BitmapFactory.decodeResource(getResources(), R.drawable.asuhayden);
-        transbmp = BitmapFactory.decodeResource(getResources(), R.drawable.asuhayden2);
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        imgbmp = BitmapFactory.decodeResource(getResources(), R.drawable.asuhayden,opts);
+        transbmp = BitmapFactory.decodeResource(getResources(), R.drawable.asuhayden2,opts);
         transbmp_trunc =Bitmap.createBitmap(transbmp, offset_x,0,transbmp.getWidth()-offset_x, transbmp.getHeight());
     }
     @Override

@@ -9,9 +9,13 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
-
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_PLATFORM=android-9',
+                        '-DANDROID_TOOLCHAIN=clang'
+            }
+        }
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
     buildTypes {
         release {
@@ -24,7 +28,11 @@ android {
         cmake {
             path 'CMakeLists.txt'
         }
+//        ndkBuild {
+//            path 'src/main/c/Android.mk'
+//        }
     }
+
 }
 
 dependencies {

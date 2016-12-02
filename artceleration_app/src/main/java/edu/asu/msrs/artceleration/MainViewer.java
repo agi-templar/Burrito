@@ -2,41 +2,23 @@ package edu.asu.msrs.artceleration;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.target.Target;
-import com.jph.takephoto.model.TImage;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 
-import edu.asu.msrs.artcelerationlibrary.ArtLib;
-import edu.asu.msrs.artcelerationlibrary.TransformHandler;
-import edu.asu.msrs.artcelerationlibrary.TransformTest;
-import edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformThreadPool;
+import edu.asu.msrs.artcelerationlibrary.*;
 
-import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
 
 public class MainViewer extends AppCompatActivity {
     static {
@@ -78,18 +60,13 @@ public class MainViewer extends AppCompatActivity {
         initSpinner();
         initMenu();
 
-
 //                        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, testsArray);
 //                        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 //                        spinner.setAdapter(spinnerArrayAdapter);
 
-
-
-
-
         spinner = (Spinner) findViewById(R.id.spinner);
-        status1 = (TextView) findViewById(R.id.statusText1);
-        status2 = (TextView) findViewById(R.id.statusText2);
+        //status1 = (TextView) findViewById(R.id.statusText1);
+        //status2 = (TextView) findViewById(R.id.statusText2);
 
 //        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 //            @Override
@@ -158,7 +135,8 @@ public class MainViewer extends AppCompatActivity {
 
                 TransformTest t = tests[position];
 
-                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)) {
+                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs, artview.getLeft(), artview.getTop(),
+                        artview.getMeasuredWidth(), artview.getMeasuredHeight())) {
                     makeToast("Transform requested : " + transforms[t.transformType]);
                 } else {
                     makeToast("Transform request failed" + transforms[t.transformType]);

@@ -86,7 +86,7 @@ public class ArtLib {
         this.artTransformListener = artlistener;
     }
 
-    public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
+    public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs, int left, int top, int viewWidth, int viewHeight) {
 
         Bundle dataBundle = new Bundle();
 
@@ -112,6 +112,13 @@ public class ArtLib {
             dataBundle.putInt("width", width);
             dataBundle.putInt("height", height);
             dataBundle.putInt("index", index);
+            dataBundle.putInt("left", left);
+            dataBundle.putInt("top", top);
+            dataBundle.putInt("viewWidth", viewWidth);
+            dataBundle.putInt("viewHeight", viewHeight);
+
+            // test
+            dataBundle.putParcelable("image", img);
 
             // create message to be sent to ArtTransformService
             Message message = Message.obtain(null, index, width, height);
@@ -134,24 +141,40 @@ public class ArtLib {
     }
 
     // ArtLib Handler: receive message from service and tell UI thread to update img
+//    public class ArtLibHandler extends Handler {
+//
+//        @Override
+//        public void handleMessage(Message msg) {
+//            Bundle dataBundle = msg.getData();
+//            ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
+//
+//            InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
+//            byte[] byteArray = new byte[0];
+//            try {
+//                byteArray = IOUtils.toByteArray(inputStream);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            } finally {
+//                Bitmap img = Bitmap.createBitmap(msg.arg1, msg.arg2, Bitmap.Config.ARGB_8888);
+//                ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+//                buffer.rewind();
+//                img.copyPixelsFromBuffer(buffer);
+//
+//                if (artTransformListener != null) {
+//                    artTransformListener.onTransformProcessed(img);
+//                    Log.d("AsyncTask", "Transform Finished!");
+//                }
+//            }
+//
+//        }
+//    }
+
     public class ArtLibHandler extends Handler {
 
         @Override
         public void handleMessage(Message msg) {
             Bundle dataBundle = msg.getData();
-            ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
-
-            InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
-            byte[] byteArray = new byte[0];
-            try {
-                byteArray = IOUtils.toByteArray(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                Bitmap img = Bitmap.createBitmap(msg.arg1, msg.arg2, Bitmap.Config.valueOf("ARGB_8888"));
-                ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-                buffer.rewind();
-                img.copyPixelsFromBuffer(buffer);
+            Bitmap img = dataBundle.getParcelable("image");
 
                 if (artTransformListener != null) {
                     artTransformListener.onTransformProcessed(img);
@@ -160,6 +183,6 @@ public class ArtLib {
             }
 
         }
-    }
+
 
 }

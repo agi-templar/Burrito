@@ -12,7 +12,8 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags ""
+                arguments '-DANDROID_PLATFORM=android-9',
+                        '-DANDROID_TOOLCHAIN=clang'
             }
         }
     }
@@ -28,6 +29,16 @@ android {
         }
     }
     productFlavors {
+        arm7 {
+            ndk {
+                abiFilters 'armeabi-v7a'
+            }
+        }
+        x86 {
+            ndk {
+                abiFilters 'x86', 'x86_64'
+            }
+        }
     }
 }
 
@@ -41,5 +52,5 @@ dependencies {
     compile project(':artcelerationlibrary')
     compile 'it.sephiroth.android.library.bottomnavigation:bottom-navigation:1.0.9'
     compile 'com.aurelhubert:ahbottomnavigation:2.0.1'
-    compile 'com.jph.takephoto:takephoto_library:4.0.0'
+    compile project(':artcelerationlibrary')
 }
