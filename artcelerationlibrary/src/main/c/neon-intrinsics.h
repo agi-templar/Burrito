@@ -14,9 +14,20 @@
  * limitations under the License.
  *
  */
-#ifndef HELLONEON_INTRINSICS_H
-#define HELLONEON_INTRINSICS_H
+#ifndef NEON_INTRINSICS_H
+#define NEON_INTRINSICS_H
+
+#include <stdint.h>
+
+typedef struct
+{
+    uint8_t alpha;
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+} argb;
 
 void fir_filter_neon_intrinsics(short *output, const short* input, const short* kernel, int width, int kernelSize);
+void line_pixel_processing_intrinsics(argb * new, argb * old, uint32_t width);
 
-#endif /* HELLONEON_INTRINSICS_H */
+#endif /* NEON_INTRINSICS_H */

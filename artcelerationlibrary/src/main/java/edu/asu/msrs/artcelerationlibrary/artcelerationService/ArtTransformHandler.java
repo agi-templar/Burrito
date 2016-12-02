@@ -49,6 +49,7 @@ public class ArtTransformHandler extends Handler {
     }
 
     public native void convertToGray(Bitmap bitmapIn, Bitmap bitmapOut);
+    public native void lomo(Bitmap bitmapIn, Bitmap bitmapOut);
     //public native void findEdge(Bitmap bitmapIn, Bitmap bitmapOut);
 
 
@@ -86,7 +87,7 @@ public class ArtTransformHandler extends Handler {
                         } catch (IOException e) {
                             e.printStackTrace();
                         } finally{
-                            convertToGray(rawBitmap,newBitmap);
+                            lomo(rawBitmap,newBitmap);
                             //findEdge(bitmapNew,bitmapNew2);
                         }
                         break;

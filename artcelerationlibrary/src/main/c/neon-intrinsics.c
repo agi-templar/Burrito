@@ -17,6 +17,37 @@
 #include "neon-intrinsics.h"
 #include <arm_neon.h>
 
+
+void
+line_pixel_processing_intrinsics (argb * new, argb * old, uint32_t width){
+
+    int i;
+    uint8x8_t rfac = vdup_n_u8 (12);
+    uint8x8_t gfac = vdup_n_u8 (22);
+    uint8x8_t bfac = vdup_n_u8 (55);
+    width/=8;
+
+    for (i=0; i<width; i++)
+    {
+        uint16x8_t  temp;
+        uint8x8x3_t rgb;
+        rgb.val[0] = vld1_u8(old->red);
+        rgb.val[1] = vld1_u8(old->green);
+        rgb.val[2] = vld1_u8(old->blue);
+
+        uint8x8_t result;
+
+        temp = vmull_u8 (rgb.val[0],      rfac);
+        temp = vmlal_u8 (temp,rgb.val[1], gfac);
+        temp = vmlal_u8 (temp,rgb.val[2], bfac);
+
+        result = vshrn_n_u16 (temp, 8);
+        vst1_u8 (new, result);
+        old  += 8*3;
+        new += 8;
+    }
+
+}
 /* this source file should only be compiled by Android.mk /CMake when targeting
  * the armeabi-v7a ABI, and should be built in NEON mode
  */

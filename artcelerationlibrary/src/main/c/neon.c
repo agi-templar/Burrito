@@ -19,7 +19,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cpu-features.h>
+#include <android/log.h>
+#include <android/bitmap.h>
 #include "neon-intrinsics.h"
+#include <math.h>
+
+
+#define  LOG_TAG    "libArtTransform"
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+
 
 #define DEBUG 0
 
@@ -29,6 +38,90 @@
 #else
 #  define  D(...)  do {} while (0)
 #endif
+
+
+
+static int rgb_clamp(int value) {
+    if(value > 255) {
+        return 255;
+    }
+    if(value < 0) {
+        return 0;
+    }
+    return value;
+}
+
+void line_pixel_processing (argb * new, argb * old, uint32_t width) {
+    int i;
+    for (i=0;i<width;i++) {
+        new[i].red = rgb_clamp(0.3 * old[i].red + 0.59 * old[i].green + 0.11*old[i].blue);
+        new[i].green = rgb_clamp(0.8 * old[i].red + 0.39 * old[i].green + 0.71*old[i].blue);
+        new[i].blue = rgb_clamp(0.3 * old[i].red + 0.79 * old[i].green + 0.61*old[i].blue);
+    }
+}
+
+/*
+convertToGray
+Pixel operation
+*/
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_lomo(JNIEnv * env, jobject  obj, jobject bitmapcolor,jobject bitmapgray)
+{
+    AndroidBitmapInfo  infocolor;
+    void*              pixelscolor;
+    AndroidBitmapInfo  infogray;
+    void*              pixelsgray;
+    int                ret;
+    int 			y;
+    int             x;
+
+
+    LOGI("convertToGray");
+    if ((ret = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+
+
+    if ((ret = AndroidBitmap_getInfo(env, bitmapgray, &infogray)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    // modify pixels with image processing algorithm
+
+    for (y=0;y<(&infocolor)->height;y++) {
+        argb * line = (argb *) pixelscolor;
+        argb * grayline = (argb *) pixelsgray;
+
+        line_pixel_processing (grayline, line, infocolor.width);
+//        for (x=0;x<(&infocolor)->width;x++) {
+//
+//            grayline[x].red = rgb_clamp(0.3 * line[x].red + 0.59 * line[x].green + 0.11*line[x].blue);
+//            grayline[x].green = rgb_clamp(0.8 * line[x].red + 0.39 * line[x].green + 0.71*line[x].blue);
+//            grayline[x].blue = rgb_clamp(0.3 * line[x].red + 0.79 * line[x].green + 0.61*line[x].blue);
+//
+//        }
+
+        pixelscolor = (char *)pixelscolor + infocolor.stride;
+        pixelsgray = (char *) pixelsgray + infogray.stride;
+    }
+
+    LOGI("unlocking pixels");
+    AndroidBitmap_unlockPixels(env, bitmapcolor);
+    AndroidBitmap_unlockPixels(env, bitmapgray);
+
+
+}
+
+
 
 /* return current time in milliseconds */
 static double
@@ -128,6 +221,7 @@ Java_com_example_helloneon_HelloNeon_stringFromJNI( JNIEnv* env,
         strlcat(buffer, "Not an ARMv7 and not an X86 SSSE3 CPU !\n", sizeof buffer);
         goto EXIT;
     }
+
 
     /* HAVE_NEON is defined in Android.mk ! */
 #ifdef HAVE_NEON
