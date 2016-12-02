@@ -1,29 +1,32 @@
-# Sets the minimum version of CMake required to build your native library.
-# This ensures that a certain set of CMake features is available to
-# your build.
 
 cmake_minimum_required(VERSION 3.4.1)
 
-# Specifies a library name, specifies whether the library is STATIC or
-# SHARED, and provides relative paths to the source code. You can
-# define multiple libraries by adding multiple add.library() commands,
-# and CMake builds them for you. When you build your app, Gradle
-# automatically packages shared libraries with your APK.
+add_library(cpufeatures STATIC
+            ${ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c)
 
-add_library( # Specifies the name of the library.
-             artTransform-lib
+# set up neon build flag for file using intrinsics
+# name: helloneon-intrinsics.c (It is named EXACTLY as this on disk,
+#                              just like a normal source file)
+# then set up neon flag for neon files
+# [This example only build for armeabi-v7a, x86 could be done the same way]
+#
+if (${ANDROID_ABI} STREQUAL "armeabi-v7a")
+  # make a list of neon files and add neon compiling flags to them
+  set(neon_SRCS src/main/c/neon-intrinsics.c)
 
-             # Sets the library as a shared library.
-             SHARED
+  set_property(SOURCE ${neon_SRCS}
+               APPEND_STRING PROPERTY COMPILE_FLAGS " -mfpu=neon")
+  add_definitions("-DHAVE_NEON=1")
+else ()
+  set(neon_SRCS)
+endif ()
 
-             # Provides a relative path to your source file(s).
-             src/main/c/artTransform-lib.c )
 
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because system libraries are included in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
+add_library( artTransform-lib SHARED
+             src/main/c/artTransform-lib.c
+             src/main/c/neon.c
+             ${neon_SRCS} )
+
 
 find_library( log-lib
                 log )
@@ -31,13 +34,18 @@ find_library( log-lib
 find_library( jnigraphics-lib
                  jnigraphics )
 
+
+target_include_directories(artTransform-lib PRIVATE
+                           ${ANDROID_NDK}/sources/android/cpufeatures)
+
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in the
 # build script, prebuilt third-party libraries, or system libraries.
 
 # Links your native library against one or more other native libraries.
-target_link_libraries( # Specifies the target library.
-                       artTransform-lib
+target_link_libraries( artTransform-lib
+                       android
+                       cpufeatures
 
                        # Links the log library to the target library.
                        ${log-lib}

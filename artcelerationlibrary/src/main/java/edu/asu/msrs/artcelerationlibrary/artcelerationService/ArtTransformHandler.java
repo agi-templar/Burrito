@@ -178,11 +178,6 @@ public class ArtTransformHandler extends Handler {
         Canvas canvas = new Canvas(tempBitmap);
         canvas.translate(0, 0);
 
-        Log.d("viewWidth", String.valueOf((int)(viewWidth/scaleFactor)));
-        Log.d("viewHeight", String.valueOf((int)(viewHeight/scaleFactor)));
-        Log.d("left", String.valueOf(-left/scaleFactor));
-        Log.d("right", String.valueOf(-top/scaleFactor));
-
         canvas.scale(1/scaleFactor,1/scaleFactor);
         Paint paint = new Paint();
         paint.setFlags(Paint.FILTER_BITMAP_FLAG);
