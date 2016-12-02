@@ -133,41 +133,9 @@ public class ArtLib {
             e.printStackTrace();
         }
 
-//        ArtTransformTaskCallable callable = new ArtTransformTaskCallable();
-//        callable.setArtTransformThreadPool(artTransformThreadPool);
-//        artTransformThreadPool.addArtTransformTask(callable);
-
         return true;
     }
 
-    // ArtLib Handler: receive message from service and tell UI thread to update img
-//    public class ArtLibHandler extends Handler {
-//
-//        @Override
-//        public void handleMessage(Message msg) {
-//            Bundle dataBundle = msg.getData();
-//            ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
-//
-//            InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
-//            byte[] byteArray = new byte[0];
-//            try {
-//                byteArray = IOUtils.toByteArray(inputStream);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            } finally {
-//                Bitmap img = Bitmap.createBitmap(msg.arg1, msg.arg2, Bitmap.Config.ARGB_8888);
-//                ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-//                buffer.rewind();
-//                img.copyPixelsFromBuffer(buffer);
-//
-//                if (artTransformListener != null) {
-//                    artTransformListener.onTransformProcessed(img);
-//                    Log.d("AsyncTask", "Transform Finished!");
-//                }
-//            }
-//
-//        }
-//    }
 
     public class ArtLibHandler extends Handler {
 

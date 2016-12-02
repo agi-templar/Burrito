@@ -60,33 +60,9 @@ public class MainViewer extends AppCompatActivity {
         initSpinner();
         initMenu();
 
-//                        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, testsArray);
-//                        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-//                        spinner.setAdapter(spinnerArrayAdapter);
 
         spinner = (Spinner) findViewById(R.id.spinner);
-        //status1 = (TextView) findViewById(R.id.statusText1);
-        //status2 = (TextView) findViewById(R.id.statusText2);
 
-//        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-//                TransformTest t = tests[position];
-//                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)) {
-//
-//                    makeToast("Transform requested : " + transforms[t.transformType]);
-//
-//
-//                } else {
-//                    makeToast("Transform request failed" + transforms[t.transformType]);
-//                }
-//            }
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> parent) {
-//
-//            }
-//        });
 
     }
 
@@ -116,17 +92,13 @@ public class MainViewer extends AppCompatActivity {
         bottomNavigation.addItem(item4);
         bottomNavigation.addItem(item5);
 
-        //bottomNavigation.setDefaultBackgroundColor(Color.parseColor("#FEFEFE"));
 
         bottomNavigation.setTranslucentNavigationEnabled(true);
 
-//        bottomNavigation.setAccentColor(Color.parseColor("#F63D2B"));
-//        bottomNavigation.setInactiveColor(Color.parseColor("#747474"));
 
-        //  Enables Reveal effect
         bottomNavigation.setColored(true);
 
-        bottomNavigation.setCurrentItem(0);
+        //bottomNavigation.setCurrentItem(0);
 
         bottomNavigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
             @Override
@@ -137,7 +109,7 @@ public class MainViewer extends AppCompatActivity {
 
                 if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs, artview.getLeft(), artview.getTop(),
                         artview.getMeasuredWidth(), artview.getMeasuredHeight())) {
-                    makeToast("Transform requested : " + transforms[t.transformType]);
+                    //makeToast("Transform requested : " + transforms[t.transformType]);
                 } else {
                     makeToast("Transform request failed" + transforms[t.transformType]);
                 }
