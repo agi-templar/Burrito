@@ -40,7 +40,6 @@
 #endif
 
 
-
 static int rgb_clamp(int value) {
     if(value > 255) {
         return 255;
@@ -51,17 +50,39 @@ static int rgb_clamp(int value) {
     return value;
 }
 
-void line_pixel_processing (argb * new, argb * old, uint32_t width) {
+// Core function for the LOMO artTransform
+void line_pixel_processing_lomo(argb *new, argb *old, uint32_t width) {
     int i;
     for (i=0;i<width;i++) {
-        new[i].red = rgb_clamp(0.3 * old[i].red + 0.59 * old[i].green + 0.11*old[i].blue);
-        new[i].green = rgb_clamp(0.8 * old[i].red + 0.39 * old[i].green + 0.71*old[i].blue);
-        new[i].blue = rgb_clamp(0.3 * old[i].red + 0.79 * old[i].green + 0.61*old[i].blue);
+        new[i].red = rgb_clamp(0.66 * old[i].red + 0.36 * old[i].green + 0.44 * old[i].blue);
+        new[i].green = rgb_clamp(0.55 * old[i].red + 0.66 * old[i].green + 0.46 * old[i].blue);
+        new[i].blue = rgb_clamp(0.46 * old[i].red + 0.24 * old[i].green + 0.44 * old[i].blue);
     }
 }
 
+// Core function for the filter artTransform
+void line_pixel_processing_filter(argb *new, argb *old, uint32_t width) {
+    int i;
+    for (i = 0; i < width; i++) {
+        new[i].red = rgb_clamp(0.2 * old[i].red + 0.4 * old[i].green + 0.2 * old[i].blue);
+        new[i].green = rgb_clamp(0.4 * old[i].red + 0.8 * old[i].green + 0.4 * old[i].blue);
+        new[i].blue = rgb_clamp(0.2 * old[i].red + 0.4 * old[i].green + 0.2 * old[i].blue);
+    }
+}
+
+// Core function for the filter artTransform
+void line_pixel_processing_grey(argb *new, argb *old, uint32_t width) {
+    int i;
+    for (i = 0; i < width; i++) {
+        new[i].red = rgb_clamp(0.6 * old[i].red);
+        new[i].green = rgb_clamp(0.3 * old[i].green);
+        new[i].blue = rgb_clamp(0.6 * old[i].blue);
+    }
+}
+
+
 /*
-convertToGray
+lomo ArtTransform
 Pixel operation
 */
 JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_lomo(JNIEnv * env, jobject  obj, jobject bitmapcolor,jobject bitmapgray)
@@ -69,10 +90,11 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
     AndroidBitmapInfo  infocolor;
     void*              pixelscolor;
     AndroidBitmapInfo  infogray;
-    void*              pixelsgray;
+    void *pixelslomo;
     int                ret;
     int 			y;
     int             x;
+    char buffer[512];
 
 
     LOGI("convertToGray");
@@ -91,7 +113,7 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
 
-    if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0) {
+    if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelslomo)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
 
@@ -99,19 +121,18 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
 
     for (y=0;y<(&infocolor)->height;y++) {
         argb * line = (argb *) pixelscolor;
-        argb * grayline = (argb *) pixelsgray;
+        argb *grayline = (argb *) pixelslomo;
 
-        line_pixel_processing (grayline, line, infocolor.width);
-//        for (x=0;x<(&infocolor)->width;x++) {
-//
-//            grayline[x].red = rgb_clamp(0.3 * line[x].red + 0.59 * line[x].green + 0.11*line[x].blue);
-//            grayline[x].green = rgb_clamp(0.8 * line[x].red + 0.39 * line[x].green + 0.71*line[x].blue);
-//            grayline[x].blue = rgb_clamp(0.3 * line[x].red + 0.79 * line[x].green + 0.61*line[x].blue);
-//
-//        }
+#ifdef HAVE_NEON
+        line_pixel_processing_intrinsics (grayline, line, infocolor.width);
+#else /* !HAVE_NEON */
+        strlcat(buffer, "Program not compiled with ARMv7 support !\n", sizeof buffer);
+        // No Neon Version, do the LOMO artTransform
+        line_pixel_processing_lomo(grayline, line, infocolor.width);
+#endif /* !HAVE_NEON */
 
         pixelscolor = (char *)pixelscolor + infocolor.stride;
-        pixelsgray = (char *) pixelsgray + infogray.stride;
+        pixelslomo = (char *) pixelslomo + infogray.stride;
     }
 
     LOGI("unlocking pixels");
@@ -121,6 +142,107 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
 
 }
 
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_filter(
+        JNIEnv *env, jobject obj, jobject bitmapcolor, jobject bitmapgray) {
+    AndroidBitmapInfo infocolor;
+    void *pixelscolor;
+    AndroidBitmapInfo infogray;
+    void *pixelslomo;
+    int ret;
+    int y;
+    int x;
+
+
+    LOGI("convertToGray");
+    if ((ret = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+
+
+    if ((ret = AndroidBitmap_getInfo(env, bitmapgray, &infogray)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelslomo)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    // modify pixels with image processing algorithm
+
+    for (y = 0; y < (&infocolor)->height; y++) {
+        argb *line = (argb *) pixelscolor;
+        argb *grayline = (argb *) pixelslomo;
+
+        // No Neon Version, do the filter artTransform
+        line_pixel_processing_filter(grayline, line, infocolor.width);
+
+        pixelscolor = (char *) pixelscolor + infocolor.stride;
+        pixelslomo = (char *) pixelslomo + infogray.stride;
+    }
+
+    LOGI("unlocking pixels");
+    AndroidBitmap_unlockPixels(env, bitmapcolor);
+    AndroidBitmap_unlockPixels(env, bitmapgray);
+
+
+}
+
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_grey(
+        JNIEnv *env, jobject obj, jobject bitmapcolor, jobject bitmapgray) {
+    AndroidBitmapInfo infocolor;
+    void *pixelscolor;
+    AndroidBitmapInfo infogray;
+    void *pixelslomo;
+    int ret;
+    int y;
+    int x;
+
+
+    LOGI("convertToGray");
+    if ((ret = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+
+
+    if ((ret = AndroidBitmap_getInfo(env, bitmapgray, &infogray)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelslomo)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    // modify pixels with image processing algorithm
+
+    for (y = 0; y < (&infocolor)->height; y++) {
+        argb *line = (argb *) pixelscolor;
+        argb *grayline = (argb *) pixelslomo;
+
+        // No Neon Version, do the grey artTransform
+        line_pixel_processing_grey(grayline, line, infocolor.width);
+
+        pixelscolor = (char *) pixelscolor + infocolor.stride;
+        pixelslomo = (char *) pixelslomo + infogray.stride;
+    }
+
+    LOGI("unlocking pixels");
+    AndroidBitmap_unlockPixels(env, bitmapcolor);
+    AndroidBitmap_unlockPixels(env, bitmapgray);
+
+
+}
 
 
 /* return current time in milliseconds */

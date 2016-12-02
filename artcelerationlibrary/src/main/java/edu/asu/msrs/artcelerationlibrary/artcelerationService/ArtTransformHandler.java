@@ -2,38 +2,25 @@ package edu.asu.msrs.artcelerationlibrary.artcelerationService;
 
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.MemoryFile;
 import android.os.Message;
 
 
 import android.os.Messenger;
-import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Log;
 
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.security.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
-
-import edu.asu.msrs.artcelerationlibrary.MemoryFileUtil;
-import edu.asu.msrs.artcelerationlibrary.R;
 
 public class ArtTransformHandler extends Handler {
     private ArtTransformService mService;
@@ -48,10 +35,10 @@ public class ArtTransformHandler extends Handler {
         System.loadLibrary("artTransform-lib");
     }
 
-    public native void convertToGray(Bitmap bitmapIn, Bitmap bitmapOut);
+    public native void filter(Bitmap bitmapIn, Bitmap bitmapOut);
     public native void lomo(Bitmap bitmapIn, Bitmap bitmapOut);
-    //public native void findEdge(Bitmap bitmapIn, Bitmap bitmapOut);
 
+    public native void grey(Bitmap bitmapIn, Bitmap bitmapOut);
 
     @Override
     public void handleMessage(Message msg) {
@@ -82,13 +69,9 @@ public class ArtTransformHandler extends Handler {
 
                     case 0:
                         try {
-                            rawBitmap = loadImage(params[0]);
-                            newBitmap = rawBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                            newBitmap = GaussianBlur(loadImage(params[0]));
                         } catch (IOException e) {
                             e.printStackTrace();
-                        } finally{
-                            lomo(rawBitmap,newBitmap);
-                            //findEdge(bitmapNew,bitmapNew2);
                         }
                         break;
                     case 1:
@@ -99,24 +82,35 @@ public class ArtTransformHandler extends Handler {
                         }
                         break;
                     case 2:
+
                         try {
-                            newBitmap = changeLight(loadImage(params[0]));
+                            rawBitmap = loadImage(params[0]);
+                            newBitmap = rawBitmap.copy(Bitmap.Config.ARGB_8888, true);
                         } catch (IOException e) {
                             e.printStackTrace();
+                        } finally {
+                            filter(rawBitmap, newBitmap);
                         }
+
                         break;
                     case 3:
                         try {
-                            newBitmap = GaussianBlur(loadImage(params[0]));
+                            rawBitmap = loadImage(params[0]);
+                            newBitmap = rawBitmap.copy(Bitmap.Config.ARGB_8888, true);
                         } catch (IOException e) {
                             e.printStackTrace();
+                        } finally {
+                            lomo(rawBitmap, newBitmap);
                         }
                         break;
                     case 4:
                         try {
-                            newBitmap = changeSaturation(loadImage(params[0]));
+                            rawBitmap = loadImage(params[0]);
+                            newBitmap = rawBitmap.copy(Bitmap.Config.ARGB_8888, true);
                         } catch (IOException e) {
                             e.printStackTrace();
+                        } finally {
+                            grey(rawBitmap, newBitmap);
                         }
                         break;
                     default:
@@ -134,35 +128,18 @@ public class ArtTransformHandler extends Handler {
                 Log.d("AsyncTask", "All Tasks Finished");
             }
             notifyArtLib(newBitmap);
-
         }
-
     }
 
 
     /**
+     *
      * loadImage from message sent by ArtLib
      *
      * @param dataBundle
      * @return
      * @throws IOException
      */
-//    private Bitmap loadImage(Bundle dataBundle) throws IOException {
-//        //Bundle dataBundle = msg.getData();
-//        ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
-//        InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
-//        //Convert the inputStream to bitmap
-//        byte[] byteArray = IOUtils.toByteArray(inputStream);
-//        //The configuration is ARGB_8888, if the configuration changed in the application, here should be changed
-//        // a better way is to pass the parameter through the message.
-//        //Bitmap.Config configBmp = Bitmap.Config.valueOf("ARGB_8888");
-//        Bitmap rawBitmap = Bitmap.createBitmap(dataBundle.getInt("width"), dataBundle.getInt("height"), Bitmap.Config.ARGB_8888);
-//        ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-//        buffer.rewind();
-//        rawBitmap.copyPixelsFromBuffer(buffer);
-//        return rawBitmap;
-//    }
-
     private Bitmap loadImage(Bundle dataBundle) throws IOException {
         left = dataBundle.getInt("left");
         top = dataBundle.getInt("top");
@@ -172,6 +149,12 @@ public class ArtTransformHandler extends Handler {
     }
 
 
+    /**
+     * Gaussian Blur
+     *
+     * @param img
+     * @return
+     */
     private Bitmap GaussianBlur(Bitmap img) {
         float scaleFactor = 3;
         float radius = 8;
@@ -184,7 +167,7 @@ public class ArtTransformHandler extends Handler {
         paint.setFlags(Paint.FILTER_BITMAP_FLAG);
         canvas.drawBitmap(img, 0, 0, paint);
 
-        tempBitmap = FastBlur.doBlur(tempBitmap, (int)radius, true);
+        tempBitmap = GaussianBlur.doBlur(tempBitmap, (int) radius, true);
 
         return Bitmap.createScaledBitmap(tempBitmap, 1200, 1066, false);
     }
@@ -272,67 +255,13 @@ public class ArtTransformHandler extends Handler {
         return newBitmap;
     }
 
+
     /**
-     * do GaussianBlur
      *
-     * @param img
-     * @return
-     */
-//    private Bitmap GaussianBlur(Bitmap img) {
-//
-//        double[][] GaussianBlurMatrix = new double[][]{
-//                {-1, 0, -1},
-//                {0, 4, 0},
-//                {-1, 0, -1}
-//        };
-//        ConvolutionMatrix convMatrix = new ConvolutionMatrix(3);
-//        convMatrix.applyConfig(GaussianBlurMatrix);
-//        convMatrix.Factor = 1;
-//        convMatrix.Offset = 127;
-//        return ConvolutionMatrix.computeConvolution3x3(img, convMatrix);
-//    }
-
-
-    /**
      * when the artTransform is done, send a message to tell the ArtLib(client)
      *
      * @param img
      */
-//    private void notifyArtLib(Bitmap img) {
-//        int width = img.getWidth();
-//        int height = img.getHeight();
-//        int what = 0;
-//        Message msg = Message.obtain(null, what, width, height);
-//
-//        msg.replyTo = targetMessenger;
-//
-//        //Message msg = Message.obtain(null, what);
-//        Bundle dataBundle = new Bundle();
-//        mClients.add(msg.replyTo);
-//        if (msg.replyTo == null) {
-//            Log.d("mclient is ", "null");
-//        }
-//        try {
-//            int bytes = img.getByteCount();
-//            ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
-//            img.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
-//            byte[] byteArray = buffer.array();
-//
-//            MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
-//            memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
-//            ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
-//            memoryFile.close();
-//
-//            dataBundle.putParcelable("pfd", pfd);
-//
-//            msg.setData(dataBundle);
-//            mClients.get(0).send(msg);
-//
-//        } catch (RemoteException | IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     private void notifyArtLib(Bitmap img) {
         int width = img.getWidth();
         int height = img.getHeight();

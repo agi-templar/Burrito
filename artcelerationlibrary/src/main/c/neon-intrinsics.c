@@ -17,14 +17,14 @@
 #include "neon-intrinsics.h"
 #include <arm_neon.h>
 
-
+// The Neon version of the Cold artTransform
 void
 line_pixel_processing_intrinsics (argb * new, argb * old, uint32_t width){
 
     int i;
-    uint8x8_t rfac = vdup_n_u8 (12);
-    uint8x8_t gfac = vdup_n_u8 (22);
-    uint8x8_t bfac = vdup_n_u8 (55);
+    uint8x8_t rfac = vdup_n_u8(255 * 0.22);
+    uint8x8_t gfac = vdup_n_u8(255 * 0.44);
+    uint8x8_t bfac = vdup_n_u8(255 * 0.88);
     width/=8;
 
     for (i=0; i<width; i++)
