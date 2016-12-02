@@ -123,13 +123,10 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
         argb * line = (argb *) pixelscolor;
         argb *grayline = (argb *) pixelslomo;
 
-#ifdef HAVE_NEON
-        line_pixel_processing_intrinsics (grayline, line, infocolor.width);
-#else /* !HAVE_NEON */
-        strlcat(buffer, "Program not compiled with ARMv7 support !\n", sizeof buffer);
+
         // No Neon Version, do the LOMO artTransform
         line_pixel_processing_lomo(grayline, line, infocolor.width);
-#endif /* !HAVE_NEON */
+
 
         pixelscolor = (char *)pixelscolor + infocolor.stride;
         pixelslomo = (char *) pixelslomo + infogray.stride;
