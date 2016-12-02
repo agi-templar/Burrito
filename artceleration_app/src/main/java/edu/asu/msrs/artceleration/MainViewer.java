@@ -78,18 +78,13 @@ public class MainViewer extends AppCompatActivity {
         initSpinner();
         initMenu();
 
-
 //                        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, testsArray);
 //                        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 //                        spinner.setAdapter(spinnerArrayAdapter);
 
-
-
-
-
         spinner = (Spinner) findViewById(R.id.spinner);
-        status1 = (TextView) findViewById(R.id.statusText1);
-        status2 = (TextView) findViewById(R.id.statusText2);
+        //status1 = (TextView) findViewById(R.id.statusText1);
+        //status2 = (TextView) findViewById(R.id.statusText2);
 
 //        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 //            @Override
@@ -158,7 +153,8 @@ public class MainViewer extends AppCompatActivity {
 
                 TransformTest t = tests[position];
 
-                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs)) {
+                if (artlib.requestTransform(src_img, t.transformType, t.intArgs, t.floatArgs, artview.getLeft(), artview.getTop(),
+                        artview.getMeasuredWidth(), artview.getMeasuredHeight())) {
                     makeToast("Transform requested : " + transforms[t.transformType]);
                 } else {
                     makeToast("Transform request failed" + transforms[t.transformType]);

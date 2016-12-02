@@ -29,60 +29,6 @@ static int rgb_clamp(int value) {
     return value;
 }
 
-static void brightness(AndroidBitmapInfo* info, void* pixels, float brightnessValue){
-    int xx, yy, red, green, blue;
-    uint32_t* line;
-
-    for(yy = 0; yy < info->height; yy++){
-        line = (uint32_t*)pixels;
-        for(xx =0; xx < info->width; xx++){
-
-            //extract the RGB values from the pixel
-            red = (int) ((line[xx] & 0x00FF0000) >> 16);
-            green = (int)((line[xx] & 0x0000FF00) >> 8);
-            blue = (int) (line[xx] & 0x00000FF );
-
-            //manipulate each value
-            red = rgb_clamp((int)(red * brightnessValue));
-            green = rgb_clamp((int)(green * brightnessValue));
-            blue = rgb_clamp((int)(blue * brightnessValue));
-
-            // set the new pixel back in
-            line[xx] =
-                    ((red << 16) & 0x00FF0000) |
-                    ((green << 8) & 0x0000FF00) |
-                    (blue & 0x000000FF);
-        }
-
-        pixels = (char*)pixels + info->stride;
-    }
-}
-
-
-JNIEXPORT void JNICALL Java_com_example_ImageActivity_brightness(JNIEnv * env, jobject  obj, jobject bitmap, jfloat brightnessValue)
-{
-
-    AndroidBitmapInfo  info;
-    int ret;
-    void* pixels;
-
-    if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
-        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
-        return;
-    }
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        LOGE("Bitmap format is not RGBA_8888 !");
-        return;
-    }
-
-    if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
-        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-    }
-
-    brightness(&info,pixels, brightnessValue);
-
-    AndroidBitmap_unlockPixels(env, bitmap);
-}
 
 /*
 convertToGray
@@ -97,6 +43,7 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
     int                ret;
     int 			y;
     int             x;
+    int red, green, blue;
 
 
     LOGI("convertToGray");
@@ -111,21 +58,6 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
         return;
     }
 
-
-//    LOGI("color image :: width is %d; height is %d; stride is %d; format is %d;flags is %d",infocolor.width,infocolor.height,infocolor.stride,infocolor.format,infocolor.flags);
-//    if (infocolor.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-//        LOGE("Bitmap format is not RGBA_8888 !");
-//        return;
-//    }
-//
-//
-//    LOGI("gray image :: width is %d; height is %d; stride is %d; format is %d;flags is %d",infogray.width,infogray.height,infogray.stride,infogray.format,infogray.flags);
-//    if (infogray.format != ANDROID_BITMAP_FORMAT_A_8) {
-//        LOGE("Bitmap format is not A_8 !");
-//        return;
-//    }
-
-
     if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
@@ -136,15 +68,16 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
 
     // modify pixels with image processing algorithm
 
-    for (y=0;y<infocolor.height;y++) {
+    for (y=0;y<(&infocolor)->height;y++) {
         argb * line = (argb *) pixelscolor;
         argb * grayline = (argb *) pixelsgray;
-        for (x=0;x<infocolor.width;x++) {
+        for (x=0;x<(&infocolor)->width;x++) {
 
-            grayline[x].red = 0.5 * line[x].red;
-            grayline[x].green = 0.5 * line[x].green;
-            grayline[x].blue = 0.5 * line[x].blue;
-        }
+            grayline[x].red = rgb_clamp(0.3 * line[x].red + 0.59 * line[x].green + 0.11*line[x].blue);
+            grayline[x].green = rgb_clamp(0.8 * line[x].red + 0.39 * line[x].green + 0.71*line[x].blue);
+            grayline[x].blue = rgb_clamp(0.3 * line[x].red + 0.79 * line[x].green + 0.61*line[x].blue);
+
+    }
 
         pixelscolor = (char *)pixelscolor + infocolor.stride;
         pixelsgray = (char *) pixelsgray + infogray.stride;
@@ -156,4 +89,3 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
 
 
 }
-

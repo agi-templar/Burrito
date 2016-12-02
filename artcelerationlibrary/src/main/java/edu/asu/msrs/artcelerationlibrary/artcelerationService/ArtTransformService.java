@@ -13,10 +13,6 @@ import java.util.ArrayList;
 
 public class ArtTransformService extends Service{
 
-    static {
-        System.loadLibrary("artTransform-lib");
-    }
-
     private static final String TAG = ArtTransformService.class.getSimpleName();
 
     final Messenger mMessenger = new Messenger(new ArtTransformHandler());
