@@ -21,7 +21,7 @@ __You could click [here](https://youtu.be/U-gQQsU-qsU) to have a look how the ap
 
 Above is the project structure in high level. All activities are marked with circles and classes are marked with rounded rectangles. We could see that ArtLib is the core for the whole structure. Besides the helper classes and needed supported classes provided by professor, I created three other classes to implement service and thread. 
 
-![](https://s3.amazonaws.com/artceleration/artTransform-lib.png）
+![](https://s3.amazonaws.com/artceleration/artTransform-lib_new.png）
 
 Above is the NDK structure and NEON intrinsics is included. ArtTransformHandler declares the native functions and call them in the Message Handler part.
 
