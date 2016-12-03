@@ -3,7 +3,7 @@
 
 Team Member: Ruibo Liu & Tian Xia
 
-__You could click [here](https://youtu.be/U-gQQsU-qsU) to have a look how the app runs so smoothly with our strategy.__
+__You could click [here](https://youtu.be/Lp3gkcTTYyk) to have a look how the app runs so smoothly with our strategy.__
 
 ![](https://s3.amazonaws.com/artceleration/Burrito.png)
 
@@ -28,8 +28,8 @@ Above is the NDK structure and NEON intrinsics is included. ArtTransformHandler 
 I implemented five fancy filters:
 
 1. Gaussian Blur (Java)
-2. Sweet (Java)
-3. Sun (NDK C)
+2. Color Filter (Java)
+3. Bright (NDK C)
 4. Lomo (NDK/NEON)
 5. Noir (NDK C)
 
@@ -266,8 +266,43 @@ That is DDMS to make sure we manage to create a separate thread.
 
 Above is debug log. Click different option could send different message to handler. After processing, the onTransformProcessed() Method would be triggered.
 
+Another challenge is the NEON implements.
+
+```java
+void
+line_pixel_processing_intrinsics (argb * new, argb * old, uint32_t width){
+
+    int i;
+    uint8x8_t rfac = vdup_n_u8(255 * 0.22);
+    uint8x8_t gfac = vdup_n_u8(255 * 0.44);
+    uint8x8_t bfac = vdup_n_u8(255 * 0.88);
+    width/=8;
+
+    for (i=0; i<width; i++)
+    {
+        uint16x8_t  temp;
+        uint8x8x3_t rgb;
+        rgb.val[0] = vld1_u8(old->red);
+        rgb.val[1] = vld1_u8(old->green);
+        rgb.val[2] = vld1_u8(old->blue);
+
+        uint8x8_t result;
+
+        temp = vmull_u8 (rgb.val[0],      rfac);
+        temp = vmlal_u8 (temp,rgb.val[1], gfac);
+        temp = vmlal_u8 (temp,rgb.val[2], bfac);
+
+        result = vshrn_n_u16 (temp, 8);
+        vst1_u8 (new, result);
+        old  += 8*3;
+        new += 8;
+    }
+}
+```
+
 ## Improvement/Potential Extra Credits 
 
+### Service Connection Management
 I think we could do something more on the service connection management, because service also has its lifecycle. If we do not consider about when the service should connect, when disconnect, it would always stay in our users' background progresses and consume device resource all the time. 
 
 So we have tried some mechanisms like:
@@ -302,9 +337,81 @@ We assume value of "arg1" in message to be starId, which is a parameter recordin
 
 Above is in the Handler class. It enables out service progress could stop by itself after all its message queue has been handled yet. The keypoint is, if our user kill the service progress for some reasons, the service would automatically continue its undo queue handle job!
 
-What's more, I have already done three custom effects right now (as shown at the beginning). I think finally I could develop more interesting effects!
+### Threadpool Management
 
-That's all. Really thanks professor. It’s a great experience.
+When using our app, you would not feel any lag, because we managed to handle all the threads in a perfect way.
 
+```java
+public class ArtTransformThreadPool {
 
+    private static ArtTransformThreadPool sArtTransformThreadPoolIns = null;
 
+    private final BlockingQueue<Runnable> mArtTransformRequestQueue;
+    private List<Future> mDoingArtTransform;
+    private final ExecutorService mArtTransformThreadPool;
+    private static final TimeUnit KEEP_ALIVE_TIME_UNIT;
+    private static final int KEEP_ALIVE_TIME = 1;
+    
+    // Get the currently available max number of cores.
+    private static int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
+    
+    static {
+        sArtTransformThreadPoolIns = new ArtTransformThreadPool();
+        KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
+    }
+
+    private ArtTransformThreadPool() {
+        mArtTransformRequestQueue = new LinkedBlockingQueue<Runnable>();
+        mDoingArtTransform = new ArrayList<>();
+	
+	// Creat a Thread Pool with NUMBER_OF_CORES threads
+        mArtTransformThreadPool = Executors.newFixedThreadPool(NUMBER_OF_CORES, new BackgroundThreadFactory());
+    }
+
+    public static ArtTransformThreadPool getInstance() {
+        return sArtTransformThreadPoolIns;
+    }
+
+    // Add a task
+    public void addArtTransformTask(Callable callable) {
+        Future future = mArtTransformThreadPool.submit(callable);
+        mDoingArtTransform.add(future);
+    }
+
+    public void cancelAll() {
+        synchronized (this) {
+            mArtTransformRequestQueue.clear();
+            for (Future task : mDoingArtTransform) {
+                if (!task.isDone()) {
+                    task.cancel(true);
+                }
+            }
+            mDoingArtTransform.clear();
+        }
+    }
+    
+    private static class BackgroundThreadFactory implements ThreadFactory {
+        private static int sTag = 1;
+
+        @Override
+        public Thread newThread(Runnable runnable) {
+            Thread thread = new Thread(runnable);
+            thread.setName("CustomThread" + sTag);
+            thread.setPriority(Process.THREAD_PRIORITY_BACKGROUND);
+
+            // A exception handler is created to log the exception from threads
+            thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread thread, Throwable ex) {
+                    Log.e("BackgroundThread", thread.getName() + " encountered an error: " + ex.getMessage());
+                }
+            });
+            return thread;
+        }
+    }
+}
+```
+
+Above is the core class for creating a custom thread pool which makes the device spare no effort to accomplish all the tasks. In our case, the AsyncTasks.
+
+That's all. Thanks.
