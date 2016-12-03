@@ -3,7 +3,7 @@
 
 Team Member: Ruibo Liu & Tian Xia
 
-__You could click [here](https://youtu.be/Lp3gkcTTYyk) to have a look how the app runs so smoothly with our strategy.__
+__Video!: You could click [here](https://youtu.be/Lp3gkcTTYyk) to have a look how the app runs so smoothly with our strategy.__
 
 ![](https://s3.amazonaws.com/artceleration/Burrito.png)
 
