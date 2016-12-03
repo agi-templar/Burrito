@@ -25,6 +25,14 @@ Above is the project structure in high level. All activities are marked with cir
 
 Above is the NDK structure and NEON intrinsics is included. ArtTransformHandler declares the native functions and call them in the Message Handler part.
 
+I implemented five fancy filters:
+
+1. Gaussian Blur (Java)
+2. Sweet (Java)
+3. Sun (NDK C)
+4. Lomo (NDK/NEON)
+5. Noir (NDK C)
+
 ## Message Queue & Separate Thread… How does it work? 
 
 ![](https://s3.amazonaws.com/artceleration/truck_whole.png)
