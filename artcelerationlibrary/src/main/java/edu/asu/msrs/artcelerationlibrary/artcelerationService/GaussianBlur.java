@@ -1,10 +1,19 @@
 package edu.asu.msrs.artcelerationlibrary.artcelerationService;
-
-
 import android.graphics.Bitmap;
+
+// The code is ported from "FastBlur Algorithm" commonly used in webpage development
+
+// Actually I did this java adaptation based on a js version. The link is: http://www.quasimondo.com/BoxBlurForCanvas/FastBlur.js
 
 public class GaussianBlur {
 
+    /**
+     *
+     * @param rawBitmap: the old Bitmap
+     * @param radius: Gassian Blur radius
+     * @param flag_canReuseInBitmap: A flag to decide whether to create a new Bitmap if artTransform has already completed
+     * @return
+     */
     public static Bitmap doBlur(Bitmap rawBitmap, int radius, boolean flag_canReuseInBitmap) {
 
         Bitmap bitmap;
@@ -18,6 +27,7 @@ public class GaussianBlur {
             return (null);
         }
 
+        // Get the Width and Height
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
 
@@ -55,6 +65,7 @@ public class GaussianBlur {
 
         for (y = 0; y < h; y++) {
             rinsum = ginsum = binsum = routsum = goutsum = boutsum = rsum = gsum = bsum = 0;
+            // In the range defined by radius, do the Gaussian Blur
             for (i = -radius; i <= radius; i++) {
                 p = pix[yi + Math.min(wm, Math.max(i, 0))];
                 sir = stack[i + radius];

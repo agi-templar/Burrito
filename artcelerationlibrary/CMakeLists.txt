@@ -25,6 +25,7 @@ endif ()
 add_library( artTransform-lib SHARED
              src/main/c/artTransform-lib.c
              src/main/c/neon.c
+             src/main/c/NativeImageProcessor.cpp
              ${neon_SRCS} )
 
 

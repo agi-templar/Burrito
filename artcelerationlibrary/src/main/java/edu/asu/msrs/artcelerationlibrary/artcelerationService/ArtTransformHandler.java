@@ -35,10 +35,10 @@ public class ArtTransformHandler extends Handler {
         System.loadLibrary("artTransform-lib");
     }
 
-    public native void filter(Bitmap bitmapIn, Bitmap bitmapOut);
+    public native void bright(Bitmap bitmapIn, Bitmap bitmapOut);
     public native void lomo(Bitmap bitmapIn, Bitmap bitmapOut);
-
     public native void grey(Bitmap bitmapIn, Bitmap bitmapOut);
+    public native void findEdges(Bitmap bitmapIn, Bitmap bitmapOut);
 
     @Override
     public void handleMessage(Message msg) {
@@ -54,6 +54,7 @@ public class ArtTransformHandler extends Handler {
 
         Bitmap rawBitmap;
         Bitmap newBitmap;
+        Bitmap greyBitmap;
 
         @Override
         protected void onPreExecute() {
@@ -82,16 +83,19 @@ public class ArtTransformHandler extends Handler {
                         }
                         break;
                     case 2:
-
                         try {
                             rawBitmap = loadImage(params[0]);
                             newBitmap = rawBitmap.copy(Bitmap.Config.ARGB_8888, true);
                         } catch (IOException e) {
                             e.printStackTrace();
                         } finally {
-                            filter(rawBitmap, newBitmap);
+                            bright(rawBitmap, newBitmap);
                         }
-
+//                        try {
+//                            newBitmap = changeLight(loadImage(params[0]));
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
                         break;
                     case 3:
                         try {
@@ -106,11 +110,13 @@ public class ArtTransformHandler extends Handler {
                     case 4:
                         try {
                             rawBitmap = loadImage(params[0]);
-                            newBitmap = rawBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                            newBitmap = Bitmap.createBitmap(rawBitmap.getWidth(),rawBitmap.getHeight(), Bitmap.Config.ALPHA_8);
+                            greyBitmap = Bitmap.createBitmap(rawBitmap.getWidth(),rawBitmap.getHeight(), Bitmap.Config.ALPHA_8);
                         } catch (IOException e) {
                             e.printStackTrace();
                         } finally {
-                            grey(rawBitmap, newBitmap);
+                            grey(rawBitmap, greyBitmap);
+                            findEdges(greyBitmap,newBitmap);
                         }
                         break;
                     default:
@@ -147,7 +153,6 @@ public class ArtTransformHandler extends Handler {
         viewHeight = dataBundle.getInt("viewHeight");
         return dataBundle.getParcelable("image");
     }
-
 
     /**
      * Gaussian Blur

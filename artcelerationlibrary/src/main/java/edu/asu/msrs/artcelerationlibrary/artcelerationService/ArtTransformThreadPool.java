@@ -25,15 +25,9 @@ public class ArtTransformThreadPool {
     private final BlockingQueue<Runnable> mArtTransformRequestQueue;
     private List<Future> mDoingArtTransform;
     private final ExecutorService mArtTransformThreadPool;
-
-
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT;
     private static final int KEEP_ALIVE_TIME = 1;
-    private static final int DEFAULT_THREAD_POOL_SIZE = 4;
-    //private static int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
-
-
-
+    private static int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
 
     static {
         sArtTransformThreadPoolIns = new ArtTransformThreadPool();
@@ -41,16 +35,9 @@ public class ArtTransformThreadPool {
     }
 
     private ArtTransformThreadPool() {
-
         mArtTransformRequestQueue = new LinkedBlockingQueue<Runnable>();
-
         mDoingArtTransform = new ArrayList<>();
-
-        mArtTransformThreadPool = Executors.newFixedThreadPool(DEFAULT_THREAD_POOL_SIZE, new BackgroundThreadFactory());
-//        mArtTransformThreadPool = new ThreadPoolExecutor(NUMBER_OF_CORES, NUMBER_OF_CORES*2,
-//                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT,
-//                mArtTransformRequestQueue, new BackgroundThreadFactory());
-
+        mArtTransformThreadPool = Executors.newFixedThreadPool(NUMBER_OF_CORES, new BackgroundThreadFactory());
     }
 
     public static ArtTransformThreadPool getInstance() {
@@ -75,16 +62,6 @@ public class ArtTransformThreadPool {
         }
     }
 
-//    public void setUiThreadCallback(UiThreadCallback uiThreadCallback) {
-//        this.uiThreadCallbackWeakReference = new WeakReference<UiThreadCallback>(uiThreadCallback);
-//    }
-//
-//    public void sendMessageToUiThread(Message message){
-//        if(uiThreadCallbackWeakReference != null && uiThreadCallbackWeakReference.get() != null) {
-//            uiThreadCallbackWeakReference.get().publishToUiThread(message);
-//        }
-//    }
-
     private static class BackgroundThreadFactory implements ThreadFactory {
         private static int sTag = 1;
 
@@ -104,8 +81,5 @@ public class ArtTransformThreadPool {
             return thread;
         }
     }
-
-
-
 
 }
