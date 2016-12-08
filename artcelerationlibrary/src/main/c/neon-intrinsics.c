@@ -22,9 +22,10 @@ void
 line_pixel_processing_intrinsics (argb * new, argb * old, uint32_t width){
 
     int i;
-    uint8x8_t rfac = vdup_n_u8(255 * 0.22);
-    uint8x8_t gfac = vdup_n_u8(255 * 0.44);
-    uint8x8_t bfac = vdup_n_u8(255 * 0.88);
+    uint8x8_t rfac = vdup_n_u8(0.0023);
+    uint8x8_t gfac = vdup_n_u8(0.0023);
+    uint8x8_t bfac = vdup_n_u8(0.0023);
+    uint8x8_t v = vmovq_n_u8(127);
     width/=8;
 
     for (i=0; i<width; i++)
@@ -38,8 +39,11 @@ line_pixel_processing_intrinsics (argb * new, argb * old, uint32_t width){
         uint8x8_t result;
 
         temp = vmull_u8 (rgb.val[0],      rfac);
+        temp = vaddq_u8(temp, v);
         temp = vmlal_u8 (temp,rgb.val[1], gfac);
+        temp = vaddq_u8(temp, v);
         temp = vmlal_u8 (temp,rgb.val[2], bfac);
+        temp = vaddq_u8(temp, v);
 
         result = vshrn_n_u16 (temp, 8);
         vst1_u8 (new, result);

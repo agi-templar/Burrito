@@ -60,13 +60,13 @@ void line_pixel_processing_lomo(argb *new, argb *old, uint32_t width) {
     }
 }
 
-// Core function for the filter artTransform
-void line_pixel_processing_bright(argb *new, argb *old, uint32_t width) {
+// Core function for the Clarendon artTransform
+void line_pixel_processing_Clarendon(argb *new, argb *old, uint32_t width) {
     int i;
     for (i = 0; i < width; i++) {
-        new[i].red = rgb_clamp(1.8 * old[i].red);
-        new[i].green = rgb_clamp(1.8 * old[i].green);
-        new[i].blue = rgb_clamp(1.8 * old[i].blue);
+        new[i].red = rgb_clamp(300 * old[i].red/255 + 0.3 * old[i].green + 0.1 * old[i].blue);
+        new[i].green = rgb_clamp(0.1 * old[i].red + 300 * old[i].green/255 + 0.3 * old[i].blue);
+        new[i].blue = rgb_clamp(0.3 * old[i].red + 0.1 * old[i].green + 300 * old[i].blue/255);
     }
 }
 
@@ -74,7 +74,7 @@ void line_pixel_processing_bright(argb *new, argb *old, uint32_t width) {
 void line_pixel_processing_grey(uint8_t *new, argb *old, uint32_t width) {
     int i;
     for (i = 0; i < width; i++) {
-        new[i] = rgb_clamp(0.3 * old[i].red + 0.59 * old[i].green + 0.11*old[i].blue);
+        new[i] = rgb_clamp(0.5 * old[i].red + 0.1 * old[i].green + 0.6*old[i].blue);
     }
 }
 
@@ -121,7 +121,6 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
         argb * line = (argb *) pixelscolor;
         argb *grayline = (argb *) pixelslomo;
 
-
         // No Neon Version, do the LOMO artTransform
         line_pixel_processing_lomo(grayline, line, infocolor.width);
 
@@ -137,7 +136,7 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
 
 }
 
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_bright(
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_Clarendon(
         JNIEnv *env, jobject obj, jobject bitmapcolor, jobject bitmapgray) {
     AndroidBitmapInfo infocolor;
     void *pixelscolor;
@@ -175,7 +174,7 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
         argb *grayline = (argb *) pixelslomo;
 
         // No Neon Version, do the filter artTransform
-        line_pixel_processing_bright(grayline, line, infocolor.width);
+        line_pixel_processing_Clarendon(grayline, line, infocolor.width);
 
         pixelscolor = (char *) pixelscolor + infocolor.stride;
         pixelslomo = (char *) pixelslomo + infogray.stride;

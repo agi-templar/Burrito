@@ -35,7 +35,7 @@ public class ArtTransformHandler extends Handler {
         System.loadLibrary("artTransform-lib");
     }
 
-    public native void bright(Bitmap bitmapIn, Bitmap bitmapOut);
+    public native void Clarendon(Bitmap bitmapIn, Bitmap bitmapOut);
     public native void lomo(Bitmap bitmapIn, Bitmap bitmapOut);
     public native void grey(Bitmap bitmapIn, Bitmap bitmapOut);
     public native void findEdges(Bitmap bitmapIn, Bitmap bitmapOut);
@@ -89,7 +89,7 @@ public class ArtTransformHandler extends Handler {
                         } catch (IOException e) {
                             e.printStackTrace();
                         } finally {
-                            bright(rawBitmap, newBitmap);
+                            Clarendon(rawBitmap, newBitmap);
                         }
 //                        try {
 //                            newBitmap = changeLight(loadImage(params[0]));
@@ -215,9 +215,9 @@ public class ArtTransformHandler extends Handler {
         ColorMatrix allColorMatrix = new ColorMatrix();
 
         colorMatrixchangeHSL.reset();
-        colorMatrixchangeHSL.setRotate(0, 20);
+        colorMatrixchangeHSL.setRotate(0, 10);
         colorMatrixchangeHSL.setRotate(1, 30);
-        colorMatrixchangeHSL.setRotate(2, 10);
+        colorMatrixchangeHSL.setRotate(2, 70);
 
         allColorMatrix.reset();
         allColorMatrix.postConcat(colorMatrixchangeHSL);
