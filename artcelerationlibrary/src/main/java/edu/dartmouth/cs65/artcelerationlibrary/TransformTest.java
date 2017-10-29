@@ -1,8 +1,5 @@
 package edu.dartmouth.cs65.artcelerationlibrary;
 
-/**
- * Created by rlikamwa on 10/24/2016.
- */
 public class TransformTest {
     public int transformType;
     public int[] intArgs;

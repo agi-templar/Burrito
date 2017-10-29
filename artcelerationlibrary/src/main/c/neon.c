@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2010 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
 #include <jni.h>
 #include <time.h>
 #include <stdio.h>
@@ -22,8 +6,6 @@
 #include <android/log.h>
 #include <android/bitmap.h>
 #include "neon-intrinsics.h"
-#include <math.h>
-
 
 #define  LOG_TAG    "libArtTransform"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
@@ -85,7 +67,7 @@ void line_pixel_processing_grey(argb *new, argb *old, uint32_t width) {
 lomo ArtTransform
 Pixel operation
 */
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_lomo(JNIEnv * env, jobject  obj, jobject bitmapcolor,jobject bitmapgray)
+JNIEXPORT void JNICALL Java_edu_dartmouth_cs65_artcelerationlibrary_artcelerationService_ArtTransformHandler_lomo(JNIEnv * env, jobject  obj, jobject bitmapcolor,jobject bitmapgray)
 {
     AndroidBitmapInfo  infocolor;
     void*              pixelscolor;
@@ -135,11 +117,9 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
     LOGI("unlocking pixels");
     AndroidBitmap_unlockPixels(env, bitmapcolor);
     AndroidBitmap_unlockPixels(env, bitmapgray);
-
-
 }
 
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_filter(
+JNIEXPORT void JNICALL Java_edu_dartmouth_cs65_artcelerationlibrary_artcelerationService_ArtTransformHandler_filter(
         JNIEnv *env, jobject obj, jobject bitmapcolor, jobject bitmapgray) {
     AndroidBitmapInfo infocolor;
     void *pixelscolor;
@@ -190,7 +170,7 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
 
 }
 
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_grey(
+JNIEXPORT void JNICALL Java_edu_dartmouth_cs65_artcelerationlibrary_artcelerationService_ArtTransformHandler_grey(
         JNIEnv *env, jobject obj, jobject bitmapcolor, jobject bitmapgray) {
     AndroidBitmapInfo infocolor;
     void *pixelscolor;

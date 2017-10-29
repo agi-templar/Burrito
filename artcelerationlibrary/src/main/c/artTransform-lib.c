@@ -30,11 +30,8 @@ static int rgb_clamp(int value) {
 }
 
 
-/*
-convertToGray
-Pixel operation
-*/
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationService_ArtTransformHandler_convertToGray(JNIEnv * env, jobject  obj, jobject bitmapcolor,jobject bitmapgray)
+
+JNIEXPORT void JNICALL Java_edu_dartmouth_cs65_artcelerationlibrary_artcelerationService_ArtTransformHandler_convertToGray(JNIEnv * env, jobject  obj, jobject bitmapcolor,jobject bitmapgray)
 {
     AndroidBitmapInfo  infocolor;
     void*              pixelscolor;
@@ -86,6 +83,5 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_artcelerationServi
     LOGI("unlocking pixels");
     AndroidBitmap_unlockPixels(env, bitmapcolor);
     AndroidBitmap_unlockPixels(env, bitmapgray);
-
 
 }

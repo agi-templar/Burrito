@@ -21,9 +21,6 @@ import edu.dartmouth.cs65.artcelerationlibrary.*;
 
 
 public class MainViewer extends AppCompatActivity {
-    static {
-        System.loadLibrary("native-lib");
-    }
 
     private Spinner spinner;
     private TextView status1;
@@ -94,7 +91,6 @@ public class MainViewer extends AppCompatActivity {
 
 
         bottomNavigation.setTranslucentNavigationEnabled(true);
-
 
         bottomNavigation.setColored(true);
 

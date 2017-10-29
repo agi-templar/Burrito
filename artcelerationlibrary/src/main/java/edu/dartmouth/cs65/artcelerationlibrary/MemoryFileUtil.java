@@ -1,8 +1,5 @@
 package edu.dartmouth.cs65.artcelerationlibrary;
 
-/**
- * Created by rlikamwa on 10/26/2016.
- */
 import android.os.MemoryFile;
 import android.os.ParcelFileDescriptor;
 
