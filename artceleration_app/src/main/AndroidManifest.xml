@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="edu.asu.msrs.artceleration">
+    package="edu.dartmouth.cs65.jnidemo">
 
     <application
         android:allowBackup="true"
@@ -10,7 +10,7 @@
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainViewer">
+        <activity android:name="edu.dartmouth.cs65.jnidemo.MainViewer">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -18,7 +18,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name="edu.asu.msrs.artcelerationlibrary.artcelerationService.ArtTransformService" ></service>
+            android:name="edu.dartmouth.cs65.artcelerationlibrary.artcelerationService.ArtTransformService" ></service>
 
     </application>
     <uses-permission android:name="android.permission.CAMERA" />
